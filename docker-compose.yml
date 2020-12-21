@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  cargo:
+    restart: on-failure
+    build:
+      context: ./
+      dockerfile: "rust-dockerfile"
+    working_dir: /home/rust
+    volumes:
+      - .:/home/rust
+      - ./target/release:/home/rust/target/release
+    networks:
+      - backend
+networks:
+  backend:
+    driver: "bridge"

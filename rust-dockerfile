@@ -1,0 +1,10 @@
+#################################
+#            BUILD              #
+#################################
+
+FROM rustlang/rust:nightly-buster as builder
+
+WORKDIR /home/rust
+COPY . .
+
+CMD tail -f /dev/null
