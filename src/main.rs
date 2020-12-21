@@ -55,8 +55,8 @@ pub enum Input {
         acknowledgement: Option<plugins::amqp::Acknowledgements>,
         #[structopt(short, long, default_value = "1", help = "Limit number of unacknowledged messages")]
         prefetch_count: u16,
-        #[structopt(short, long, required_if("acknowledgements", "nack_requeue"), help = "Message limit, when exceeded, the worker will switch off")]
-        count: Option<usize>
+        #[structopt(short, long, default_value = "0", required_if("acknowledgements", "nack_requeue"), help = "Message limit, when exceeded, the worker will switch off")]
+        count: usize
     },
     #[structopt(about = "Read from files")]
     File {

@@ -13,8 +13,8 @@ pub fn consume(
     queue_name: &str,
     queue_arguments: Option<String>,
     from_acknowledgements: Option<Acknowledgements>,
-    from_count: Option<usize>,
-    from_prefetch_count: u16,
+    count: usize,
+    prefetch_count: u16,
     event_source: EventSource
 ) -> Result<()> {
     let mut connection = Connection::insecure_open(url)?;
@@ -31,21 +31,8 @@ pub fn consume(
         }
     )?;
 
-    channel.qos(0, from_prefetch_count, false)?;
+    channel.qos(0, prefetch_count, false)?;
 
-    // maybe better?
-    let count: usize;
-    match from_count {
-        Some(from_count_resolved) => {
-            count = from_count_resolved;
-        },
-        None => {
-            count = 0;
-        }
-    }
-
-    println!("Another function.");
-    // Start a consumer.
     let consumer = queue.consume(ConsumerOptions::default())?;
     println!("Waiting for messages. Press Ctrl-C to exit.");
 
@@ -54,7 +41,6 @@ pub fn consume(
             ConsumerMessage::Delivery(delivery) => {
                 let body = String::from_utf8_lossy(&delivery.body);
                 event_source.notify(Value {
-                    // WTF ????? body is not string ??? expected struct `String`, found enum `Cow`
                     data: body.to_string()
                 });
                 // do it better ?
@@ -68,7 +54,7 @@ pub fn consume(
                     Some(Acknowledgements::nack_requeue) => consumer.nack(delivery, true)?,
                     None => consumer.ack(delivery)?
                 }
-                if from_count.is_some() && (i+1) >= count {
+                if count != 0 && (i+1) >= count {
                     println!("Consumer ended after {:?} listings!", count);
                     break;
                 }
