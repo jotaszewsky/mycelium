@@ -40,7 +40,6 @@ enum Cli {
     }
 }
 
-// pub?
 #[derive(StructOpt, Serialize, Deserialize, Debug)]
 pub enum Input {
     #[structopt(about = "Read from amqp queue")]
@@ -67,7 +66,6 @@ pub enum Input {
     }
 }
 
-// pub ?
 #[derive(StructOpt, Serialize, Deserialize, Debug)]
 pub enum Output {
     #[structopt(about = "Publish to amqp exchange")]
@@ -100,13 +98,11 @@ fn parse_acknowledgements(src: &str) -> Result<plugins::amqp::Acknowledgements, 
 }
 
 fn main() -> Result<(),()> {
-    let args = Cli::from_args();
-    match args {
+    match Cli::from_args() {
         Cli::Connection {} => service::connection::execute(),
         Cli::Show {} => service::show::execute(),
         Cli::Read { input } => service::read::execute(input),
         Cli::Write { output } => service::write::execute(output),
         Cli::MultiWrite { output, clear } => service::multi_write::execute(output, clear),
-    };
-    Ok(())
+    }
 }

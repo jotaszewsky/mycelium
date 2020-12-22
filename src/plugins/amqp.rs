@@ -12,7 +12,7 @@ pub fn consume(
     url: &str,
     queue_name: &str,
     queue_arguments: Option<String>,
-    from_acknowledgements: Option<Acknowledgements>,
+    acknowledgement: Option<Acknowledgements>,
     count: usize,
     prefetch_count: u16,
     event_source: EventSource
@@ -20,13 +20,11 @@ pub fn consume(
     let mut connection = Connection::insecure_open(url)?;
     let channel = connection.open_channel(None)?;
 
-    let args = build_field_table(queue_arguments);
-
     let queue = channel.queue_declare(
         queue_name,
         QueueDeclareOptions {
             durable: true,
-            arguments: args,
+            arguments: build_field_table(queue_arguments),
             ..QueueDeclareOptions::default()
         }
     )?;
@@ -43,14 +41,10 @@ pub fn consume(
                 event_source.notify(Value {
                     data: body.to_string()
                 });
-                // do it better ?
-                match from_acknowledgements {
+                match acknowledgement {
                     Some(Acknowledgements::ack) => consumer.ack(delivery)?,
                     Some(Acknowledgements::nack) => consumer.nack(delivery, false)?,
                     Some(Acknowledgements::reject) => consumer.reject(delivery, false)?,
-                    // Check how
-                    //Some(Acknowledgements::recover) => consumer.recover(delivery)?,
-                    //Some(Acknowledgements::recover_requeue) => consumer.recover(delivery, true)?,
                     Some(Acknowledgements::nack_requeue) => consumer.nack(delivery, true)?,
                     None => consumer.ack(delivery)?
                 }
@@ -68,16 +62,20 @@ pub fn consume(
     connection.close()
 }
 
-// wyjac poza albo powielic, nie mozna korzystac tu i tam
+pub fn publish(url: &str, queue_name: &str, message: &str) -> Result<()> {
+    let mut connection = Connection::insecure_open(url)?;
+    let channel = connection.open_channel(None)?;
+    let exchange = Exchange::direct(&channel);
+    exchange.publish(Publish::new(message.as_bytes(), queue_name))?;
+    connection.close()
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 #[allow(non_camel_case_types)]
 pub enum Acknowledgements {
     ack,
     nack,
     reject,
-    // Check how ?
-    // recover,
-    // recover_requeue,
     nack_requeue
 }
 
@@ -112,12 +110,4 @@ fn build_arguments(queue_arguments: &str) -> FieldTable {
         };
     }
     return args;
-}
-
-pub fn publish(url: &str, queue_name: &str, message: &str) -> Result<()> {
-    let mut connection = Connection::insecure_open(url)?;
-    let channel = connection.open_channel(None)?;
-    let exchange = Exchange::direct(&channel);
-    exchange.publish(Publish::new(message.as_bytes(), queue_name))?;
-    connection.close()
 }
