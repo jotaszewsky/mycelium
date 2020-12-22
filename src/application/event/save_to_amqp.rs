@@ -24,7 +24,6 @@ mod tests {
     extern crate rand;
 
     use super::*;
-    use std::fs;
 
     #[test]
     fn constructor_forward_parameter() {

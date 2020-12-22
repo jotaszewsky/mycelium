@@ -62,6 +62,6 @@ mod tests {
                 }
             }
         }
-        fs::remove_dir_all(path);
+        let _ = fs::remove_dir_all(path);
     }
 }

@@ -65,97 +65,97 @@ mod tests {
     #[test]
     fn constructor_custom_path() {
         let path = &generate_path(None);
-        fs::remove_dir_all(path);
+        let _ = fs::remove_dir_all(path);
         assert_eq!(State::new(Some(path.to_path_buf())).path, path.to_path_buf() );
-        fs::remove_dir_all(path);
+        let _ = fs::remove_dir_all(path);
     }
 
     #[test]
     fn store_create_directory() {
         let path = &generate_path(None);
-        fs::remove_dir_all(path);
+        let _ = fs::remove_dir_all(path);
         let mut state: State = State::new(Some(path.to_path_buf()));
-        state.store(String::from("qwertyuiop"), String::from("test").into_bytes());
+        state.store(String::from("qwertyuiop"), String::from("test").into_bytes()).unwrap();
         assert!(state.path.is_dir());
-        fs::remove_dir_all(path);
+        let _ = fs::remove_dir_all(path);
     }
 
     #[test]
     fn store_create_nested_directory() {
         let path = &generate_path(Some(String::from("/nested")));
-        fs::remove_dir_all(path);
+        let _ = fs::remove_dir_all(path);
         let mut state: State = State::new(Some(path.to_path_buf()));
-        state.store(String::from("qwertyuiop"), String::from("test").into_bytes());
+        state.store(String::from("qwertyuiop"), String::from("test").into_bytes()).unwrap();
         assert!(state.path.is_dir());
 
         let mut path_to_buf = path.to_path_buf();
         path_to_buf.pop();
-        fs::remove_dir_all(path_to_buf);
+        let _ = fs::remove_dir_all(path_to_buf);
     }
 
     #[test]
     fn store_using_key_as_filename() {
         let path = &generate_path(None);
-        fs::remove_dir_all(path);
+        let _ = fs::remove_dir_all(path);
         let mut state: State = State::new(Some(path.to_path_buf()));
-        state.store(String::from("qwertyuiop"), String::from("test").into_bytes());
+        state.store(String::from("qwertyuiop"), String::from("test").into_bytes()).unwrap();
         assert!(state.path.join(String::from("qwertyuiop")).is_file());
-        fs::remove_dir_all(path);
+        let _ = fs::remove_dir_all(path);
     }
 
     #[test]
     fn store_using_key_with_spaces_as_filename() {
         let path = &generate_path(None);
-        fs::remove_dir_all(path);
+        let _ = fs::remove_dir_all(path);
         let mut state: State = State::new(Some(path.to_path_buf()));
-        state.store(String::from("qwertyuiop asdfghjkl"), String::from("test").into_bytes());
+        state.store(String::from("qwertyuiop asdfghjkl"), String::from("test").into_bytes()).unwrap();
         assert_eq!(state.path.join(String::from("qwertyuiop asdfghjkl")).is_file(), true);
-        fs::remove_dir_all(path);
+        let _ = fs::remove_dir_all(path);
     }
 
     #[test]
     fn store_using_key_with_dots_as_filename() {
         let path = &generate_path(None);
-        fs::remove_dir_all(path);
+        let _ = fs::remove_dir_all(path);
         let mut state: State = State::new(Some(path.to_path_buf()));
-        state.store(String::from(".qwertyuiop"), String::from("test").into_bytes());
+        state.store(String::from(".qwertyuiop"), String::from("test").into_bytes()).unwrap();
         assert_eq!(state.path.join(String::from(".qwertyuiop")).is_file(), true);
-        fs::remove_dir_all(path);
+        let _ = fs::remove_dir_all(path);
     }
 
     // maybe error better ?
     #[test]
     fn store_using_key_with_special_chars_as_filename() {
         let path = &generate_path(None);
-        fs::remove_dir_all(path);
+        let _ = fs::remove_dir_all(path);
         let mut state: State = State::new(Some(path.to_path_buf()));
-        state.store(String::from("!@#$%^&*"), String::from("test").into_bytes());
+        state.store(String::from("!@#$%^&*"), String::from("test").into_bytes()).unwrap();
         assert_eq!(state.path.join(String::from(".qwertyuiop")).is_file(), false);
-        fs::remove_dir_all(path);
+        let _ = fs::remove_dir_all(path);
     }
 
     #[test]
     fn store_write_binary_to_file() {
         let path = &generate_path(None);
-        fs::remove_dir_all(path);
+        let _ = fs::remove_dir_all(path);
         let mut state: State = State::new(Some(path.to_path_buf()));
-        state.store(String::from("qwertyuiop"), String::from("test").into_bytes());
+        state.store(String::from("qwertyuiop"), String::from("test").into_bytes()).unwrap();
         let read: String = String::from_utf8_lossy(
             &fs::read(state.path.join(String::from("qwertyuiop"))).unwrap()
         ).to_string();
         assert_eq!(read, String::from("test"));
-        fs::remove_dir_all(path);
+        let _ = fs::remove_dir_all(path);
     }
 
     #[test]
     #[should_panic]
     fn read_wrong_key_error() {
         let path = &generate_path(None);
-        fs::remove_dir_all(path);
+        let _ = fs::remove_dir_all(path);
         let mut state: State = State::new(Some(path.to_path_buf()));
         match state.read(String::from("qwertyuiop")) {
             Err(_err) => panic!(),
-            Ok(value) => ()
+            Ok(_value) => ()
         }
     }
 
@@ -163,7 +163,7 @@ mod tests {
     #[should_panic]
     fn read_not_binary_value_error() {
         let path = &generate_path(None);
-        fs::remove_dir_all(path);
+        let _ = fs::remove_dir_all(path);
 
         fs::create_dir_all(path).unwrap();
         fs::write(path.join("not_binary"), "test").unwrap();
@@ -171,11 +171,11 @@ mod tests {
         let mut state: State = State::new(Some(path.to_path_buf()));
         match state.read(String::from("not_binary")) {
             Err(_err) => {
-                fs::remove_dir_all(path);
+                let _ = fs::remove_dir_all(path);
                 panic!()
             },
             Ok(value) => {
-                fs::remove_dir_all(path);
+                let _ = fs::remove_dir_all(path);
                 let response: String = bincode::deserialize(&value).unwrap();
                 assert_eq!(response, String::from("test"));
             }
@@ -185,9 +185,9 @@ mod tests {
     #[test]
     fn read_binary_value_response() {
         let path = &generate_path(None);
-        fs::remove_dir_all(path);
+        let _ = fs::remove_dir_all(path);
 
-        fs::create_dir_all(path).unwrap();
+        let _ = fs::create_dir_all(path).unwrap();
 
         let mut output_vec: Vec<String>;
         output_vec = Vec::new();
@@ -197,11 +197,11 @@ mod tests {
         let mut state: State = State::new(Some(path.to_path_buf()));
         match state.read(String::from("binary")) {
             Err(_err) => {
-                fs::remove_dir_all(path);
+                let _ = fs::remove_dir_all(path);
                 panic!()
             },
             Ok(value) => {
-                fs::remove_dir_all(path);
+                let _ = fs::remove_dir_all(path);
                 let response: Vec<String> = bincode::deserialize(&value).unwrap();
                 for output in response {
                     assert_eq!(output, String::from("test"));

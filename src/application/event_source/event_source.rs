@@ -70,7 +70,7 @@ mod tests {
 
     #[test]
     fn notify_no_observers() {
-        let mut event_source: EventSource = EventSource::new();
+        let event_source: EventSource = EventSource::new();
         event_source.notify(Value { data: String::from("test") });
         assert!(true);
     }
