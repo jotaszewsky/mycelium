@@ -71,7 +71,7 @@ mod tests {
     #[test]
     fn notify_no_observers() {
         let event_source: EventSource = EventSource::new();
-        event_source.notify(Value { data: String::from("test") });
+        event_source.notify(Value { data: String::from("test"), header: None });
         assert!(true);
     }
 
@@ -79,7 +79,7 @@ mod tests {
     fn notify_one_observer() {
         let mut event_source: EventSource = EventSource::new();
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
-        event_source.notify(Value { data: String::from("test") });
+        event_source.notify(Value { data: String::from("test"), header: None });
     }
 
     #[test]
@@ -87,6 +87,6 @@ mod tests {
         let mut event_source: EventSource = EventSource::new();
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
-        event_source.notify(Value { data: String::from("test") });
+        event_source.notify(Value { data: String::from("test"), header: None });
     }
 }

@@ -15,7 +15,7 @@ impl SaveToAmqp {
 
 impl Observer for SaveToAmqp {
     fn on_notify(&mut self, value: &Value) -> () {
-        publish(&self.url, &self.queue, &value.data).unwrap();
+        publish(&self.url, &self.queue, &value.data, &value.header).unwrap();
     }
 }
 

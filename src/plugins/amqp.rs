@@ -1,10 +1,11 @@
 extern crate amiquip;
-use self::amiquip::{AmqpValue, Connection, ConsumerMessage, ConsumerOptions, QueueDeclareOptions, Result, FieldTable, Exchange, Publish};
+use self::amiquip::{AmqpValue, Connection, ConsumerMessage, ConsumerOptions, QueueDeclareOptions, Result, FieldTable, Exchange, Publish, AmqpProperties};
 
 extern crate serde;
 extern crate serde_json;
 
 use std::collections::HashMap;
+use std::collections::BTreeMap;
 use application::event_source::EventSource;
 use application::Value;
 
@@ -38,8 +39,10 @@ pub fn consume(
         match message {
             ConsumerMessage::Delivery(delivery) => {
                 let body = String::from_utf8_lossy(&delivery.body);
+                let headers: String = serde_json::to_string(&delivery.properties.headers()).unwrap();
                 event_source.notify(Value {
-                    data: body.to_string()
+                    data: body.to_string(),
+                    header: Some(headers)
                 });
                 match acknowledgement {
                     Some(Acknowledgements::ack) => consumer.ack(delivery)?,
@@ -62,11 +65,14 @@ pub fn consume(
     connection.close()
 }
 
-pub fn publish(url: &str, queue_name: &str, message: &str) -> Result<()> {
+pub fn publish(url: &str, queue_name: &str, message: &str, header: &Option<String>) -> Result<()> {
     let mut connection = Connection::insecure_open(url)?;
     let channel = connection.open_channel(None)?;
     let exchange = Exchange::direct(&channel);
-    exchange.publish(Publish::new(message.as_bytes(), queue_name))?;
+    match header {
+        Some(header) => exchange.publish(Publish::with_properties(message.as_bytes(), queue_name, build_properties(header)))?,
+        None => exchange.publish(Publish::new(message.as_bytes(), queue_name))?
+    }
     connection.close()
 }
 
@@ -84,6 +90,11 @@ fn build_field_table(queue_arguments: Option<String>) -> FieldTable {
         Some(json) => build_arguments(&json),
         None => FieldTable::new()
     }
+}
+
+fn build_properties(header: &String) -> AmqpProperties {
+    let headers: BTreeMap<String, AmqpValue> = serde_json::from_str(header).unwrap();
+    AmqpProperties::default().with_headers(headers)
 }
 
 #[allow(non_camel_case_types)]
@@ -171,5 +182,33 @@ mod tests {
     fn build_empty_field_table_if_no_json() {
         let fields: FieldTable = build_field_table(None);
         assert_eq!(fields.len(), 0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_build_properties_no_json() {
+        let properties: AmqpProperties = build_properties(&String::from("sf"));
+        match properties.headers() {
+            Some(headers) => {
+                for (_key, _value) in headers {
+                    assert!(false);
+                }
+            },
+            None => panic!()
+        }
+    }
+
+    #[test]
+    fn test_build_properties() {
+        let properties: AmqpProperties = build_properties(&String::from("{\"test\": {\"LongString\": \"test_value_1\"}}"));
+        match properties.headers() {
+            Some(headers) => {
+                for (key, value) in headers {
+                    assert_eq!(key, &String::from("test"));
+                    assert_eq!(value, &AmqpValue::LongString(String::from("test_value_1")));
+                }
+            },
+            None => panic!()
+        }
     }
 }

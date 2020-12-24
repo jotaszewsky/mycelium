@@ -46,7 +46,7 @@ mod tests {
     fn notify_save_no_directory_err() {
         let path = &generate_path(None);
         let mut save_to_file: SaveToFile = SaveToFile::new(path.to_path_buf(), None);
-        save_to_file.on_notify(&Value { data: String::from("test") });
+        save_to_file.on_notify(&Value { data: String::from("test"), header: None });
     }
 
     #[test]
@@ -55,7 +55,7 @@ mod tests {
         fs::create_dir_all(path).unwrap();
 
         let mut save_to_file: SaveToFile = SaveToFile::new(path.to_path_buf(), None);
-        save_to_file.on_notify(&Value { data: String::from("test") });
+        save_to_file.on_notify(&Value { data: String::from("test"), header: None });
 
         if path.is_dir() {
             for entry in path.read_dir().expect("read_dir call failed") {

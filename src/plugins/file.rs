@@ -46,7 +46,8 @@ pub fn load(input: &PathBuf, remove_used: bool, event_source: EventSource) -> Re
     }
     if input.is_file() {
         event_source.notify(Value {
-            data: read_to_string(input).unwrap()
+            data: read_to_string(input).unwrap(),
+            header: None
         });
         if remove_used {
             remove_file(input).expect("Something went wrong deleting the file")
@@ -56,7 +57,8 @@ pub fn load(input: &PathBuf, remove_used: bool, event_source: EventSource) -> Re
         for entry in input.read_dir().expect("read_dir call failed") {
             if let Ok(entry) = entry {
                 event_source.notify(Value {
-                    data: read_to_string(entry.path()).unwrap()
+                    data: read_to_string(entry.path()).unwrap(),
+                    header: None
                 });
                 if remove_used {
                     remove_file(entry.path()).expect("Something went wrong deleting the file")
