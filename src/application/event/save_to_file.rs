@@ -1,20 +1,22 @@
 use plugins::file::save;
+use plugins::file::FilenamePatterns;
 use application::Observer;
 use application::Value;
 
 pub struct SaveToFile {
-    output: std::path::PathBuf
+    output: std::path::PathBuf,
+    filename_patter: Option<FilenamePatterns>
 }
 
 impl SaveToFile {
-    pub fn new(output: std::path::PathBuf) -> SaveToFile {
-        SaveToFile { output: output }
+    pub fn new(output: std::path::PathBuf, filename_patter: Option<FilenamePatterns>) -> SaveToFile {
+        SaveToFile { output, filename_patter }
     }
 }
 
 impl Observer for SaveToFile {
     fn on_notify(&mut self, value: &Value) -> () {
-        save(&value.data, &self.output).unwrap();
+        save(&value.data, &self.output, &self.filename_patter).unwrap();
     }
 }
 
@@ -36,14 +38,14 @@ mod tests {
     #[test]
     fn constructor_forward_parameter() {
         let path = &generate_path(None);
-        assert_eq!(SaveToFile::new(path.to_path_buf()).output.to_str(), path.to_str() );
+        assert_eq!(SaveToFile::new(path.to_path_buf(), None).output.to_str(), path.to_str() );
     }
 
     #[test]
     #[should_panic]
     fn notify_save_no_directory_err() {
         let path = &generate_path(None);
-        let mut save_to_file: SaveToFile = SaveToFile::new(path.to_path_buf());
+        let mut save_to_file: SaveToFile = SaveToFile::new(path.to_path_buf(), None);
         save_to_file.on_notify(&Value { data: String::from("test") });
     }
 
@@ -52,7 +54,7 @@ mod tests {
         let path = &generate_path(None);
         fs::create_dir_all(path).unwrap();
 
-        let mut save_to_file: SaveToFile = SaveToFile::new(path.to_path_buf());
+        let mut save_to_file: SaveToFile = SaveToFile::new(path.to_path_buf(), None);
         save_to_file.on_notify(&Value { data: String::from("test") });
 
         if path.is_dir() {

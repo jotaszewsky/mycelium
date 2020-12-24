@@ -78,7 +78,9 @@ pub enum Output {
     #[structopt(about = "Publish to files")]
     File {
         #[structopt(short, long, parse(from_os_str), help = "Path to directory to store json files")]
-        output: std::path::PathBuf
+        output: std::path::PathBuf,
+        #[structopt(short, long, parse(try_from_str = parse_filename_patterns), help = "A pattern how mycelium will name json files")]
+        filename_pattern: Option<plugins::file::FilenamePatterns>,
     },
     #[structopt(about = "Publish to command line")]
     Console {
@@ -94,6 +96,14 @@ fn parse_acknowledgements(src: &str) -> Result<plugins::amqp::Acknowledgements, 
         "reject" => Ok(plugins::amqp::Acknowledgements::reject),
         "nack_requeue" => Ok(plugins::amqp::Acknowledgements::nack_requeue),
         _ => Err(format!("Invalid acknowledgements: {}", src))
+    }
+}
+
+fn parse_filename_patterns(src: &str) -> Result<plugins::file::FilenamePatterns, String> {
+    match src {
+        "random" => Ok(plugins::file::FilenamePatterns::random),
+        "index" => Ok(plugins::file::FilenamePatterns::index),
+        _ => Err(format!("Invalid filename pattern: {}", src))
     }
 }
 

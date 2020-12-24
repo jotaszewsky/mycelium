@@ -11,8 +11,12 @@ use std::fs::write;
 use std::fs::remove_file;
 use std::path::PathBuf;
 
-pub fn save(message: &str, output: &PathBuf) -> Result<(), ()> {
-    write(output.join(generate_random_filename()), message.as_bytes()).unwrap();
+pub fn save(message: &str, output: &PathBuf, filename_pattern: &Option<FilenamePatterns>) -> Result<(), ()> {
+    match filename_pattern {
+        Some(FilenamePatterns::random) => write(output.join(generate_random_filename()), message.as_bytes()).unwrap(),
+        Some(FilenamePatterns::index) => write(output.join(generate_index_filename(output)), message.as_bytes()).unwrap(),
+        None => write(output.join(generate_random_filename()), message.as_bytes()).unwrap()
+    }
     Ok(())
 }
 
@@ -22,6 +26,18 @@ fn generate_random_filename() -> String {
         .take(30)
         .collect();
     format!("{}.json", random)
+}
+
+fn generate_index_filename(output: &PathBuf) -> String {
+    let index: String = (output.read_dir().unwrap().count()+1).to_string();
+    format!("{}.json", index)
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[allow(non_camel_case_types)]
+pub enum FilenamePatterns {
+    random,
+    index
 }
 
 pub fn load(input: &PathBuf, remove_used: bool, event_source: EventSource) -> Result<(), ()> {
@@ -91,7 +107,6 @@ mod tests {
         let random: String = generate_random_filename();
         assert_eq!(random.len(), 35);
         assert_ne!(random, generate_random_filename());
-
     }
 
     #[test]
@@ -99,21 +114,55 @@ mod tests {
         let random: String = generate_random_filename();
         let extension: String = random.chars().skip(30).take(5).collect();
         assert_eq!(extension, String::from(".json"));
+    }
 
+    #[test]
+    fn save_generate_index_name() {
+        let path: PathBuf = generate_path(None);
+        let _ = fs::remove_dir_all(&path);
+        let _ = fs::create_dir_all(&path).unwrap();
+        let name: String = generate_index_filename(&path);
+        assert_eq!(name.len(), 6);
+        assert_eq!(name, generate_index_filename(&path));
+        let _ = fs::remove_dir_all(path);
+    }
+
+    #[test]
+    fn save_index_name_json() {
+        let path: PathBuf = generate_path(None);
+        let _ = fs::remove_dir_all(&path);
+        let _ = fs::create_dir_all(&path).unwrap();
+        let name: String = generate_index_filename(&path);
+        let extension: String = name.chars().skip(1).take(5).collect();
+        assert_eq!(extension, String::from(".json"));
+        let _ = fs::remove_dir_all(path);
     }
 
     #[test]
     #[should_panic]
     fn save_wrong_output_error() {
         let path: PathBuf = generate_path(None);
-        let _ = save("test", &path);
+        let _ = save("test", &path, &None);
     }
 
     #[test]
-    fn save_file() {
+    fn save_file_default() {
         let path: PathBuf = generate_path(None);
         let _ = fs::create_dir_all(&path).unwrap();
-        let _ = save("test", &path);
+        let _ = save("test", &path, &None);
+        for entry in path.read_dir().unwrap() {
+            if let Ok(entry) = entry {
+                assert_eq!(read_to_string(entry.path()).unwrap(), "test")
+            }
+        }
+        let _ = fs::remove_dir_all(&path);
+    }
+
+    #[test]
+    fn save_file_filename_index() {
+        let path: PathBuf = generate_path(None);
+        let _ = fs::create_dir_all(&path).unwrap();
+        let _ = save("test", &path, &Some(FilenamePatterns::index));
         for entry in path.read_dir().unwrap() {
             if let Ok(entry) = entry {
                 assert_eq!(read_to_string(entry.path()).unwrap(), "test")

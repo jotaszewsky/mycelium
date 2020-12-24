@@ -25,9 +25,9 @@ pub fn execute() -> Result<(),()> {
                             queue
                         ))));
                     },
-                    Output::File { output } => {
+                    Output::File { output, filename_pattern } => {
                         event_source.register_observer(Arc::new(Mutex::new(SaveToFile::new(
-                            output
+                            output, filename_pattern
                         ))));
                     },
                     Output::Console { pretty_json } => {
