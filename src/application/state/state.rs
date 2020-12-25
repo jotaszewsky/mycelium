@@ -15,7 +15,7 @@ pub struct State {
 impl State {
     pub fn new(path: Option<PathBuf>) -> State {
         match path {
-            Some(path) => State { path: path },
+            Some(path) => State { path },
             None => State { path: PathBuf::from("/tmp/mycelium") }
         }
     }

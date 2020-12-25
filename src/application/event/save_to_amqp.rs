@@ -9,7 +9,7 @@ pub struct SaveToAmqp {
 
 impl SaveToAmqp {
     pub fn new(url: String, queue: String) -> SaveToAmqp {
-        SaveToAmqp { url: url, queue: queue }
+        SaveToAmqp { url, queue }
     }
 }
 

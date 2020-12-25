@@ -9,7 +9,7 @@ pub struct SaveToConsole {
 
 impl SaveToConsole {
     pub fn new(pretty_json: bool) -> SaveToConsole {
-        SaveToConsole { pretty_json: pretty_json }
+        SaveToConsole { pretty_json }
     }
 }
 
