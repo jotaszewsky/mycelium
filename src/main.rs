@@ -63,6 +63,9 @@ pub enum Input {
         input: std::path::PathBuf,
         #[structopt(short, long, help = "Flag for remove used files")]
         remove_used: bool,
+    },
+    #[structopt(about = "Read from console")]
+    Console {
     }
 }
 

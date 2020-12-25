@@ -52,6 +52,9 @@ pub fn execute() -> Result<(),()> {
                 },
                 Input::File {input, remove_used } => {
                     plugins::file::load(&input, remove_used, event_source).unwrap()
+                },
+                Input::Console {} => {
+                    plugins::console::load(event_source).unwrap()
                 }
             }
         },

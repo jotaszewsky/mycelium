@@ -1,7 +1,6 @@
+use plugins::console::save;
 use application::Observer;
 use application::Value;
-use serde_json::json;
-use colored_json::to_colored_json_auto;
 
 pub struct SaveToConsole {
     pretty_json: bool
@@ -15,18 +14,7 @@ impl SaveToConsole {
 
 impl Observer for SaveToConsole {
     fn on_notify(&mut self, value: &Value) -> () {
-        if let Some(header) = &value.header {
-            println!("\n## HEADERS:\n");
-            match self.pretty_json {
-                true => println!("{}", to_colored_json_auto(&json!(header)).unwrap()),
-                false => println!("{}", header)
-            }
-        }
-        println!("\n## BODY:\n");
-        match self.pretty_json {
-            true => println!("{}", to_colored_json_auto(&json!(value.data)).unwrap()),
-            false => println!("{}", value.data)
-        }
+        save(&value.data, &value.header, self.pretty_json).unwrap()
     }
 }
 

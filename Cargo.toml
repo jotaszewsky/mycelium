@@ -3,7 +3,7 @@ authors = ["Karol Hrusza <khrusza@gmail.com>"]
 description = "Mycelium - application to connect between sources!"
 name = "mycelium"
 readme = "README.md"
-version = "0.0.9"
+version = "0.1.0"
 
 [dependencies]
 dotenv = "0.15.0"
