@@ -1,20 +1,19 @@
-use plugins::amqp::publish;
+use plugins::amqp::Amqp;
 use application::{Observer, Value};
 
 pub struct SaveToAmqp {
-    url: String,
-    queue: String
+    amqp: Amqp
 }
 
 impl SaveToAmqp {
     pub fn new(url: String, queue: String) -> SaveToAmqp {
-        SaveToAmqp { url, queue }
+        SaveToAmqp { amqp: Amqp::new(&url, queue, None) }
     }
 }
 
 impl Observer for SaveToAmqp {
     fn on_notify(&mut self, value: &Value) -> () {
-        publish(&self.url, &self.queue, &value.data, &value.header).unwrap();
+        self.amqp.publish(&value.data, &value.header).unwrap();
     }
 }
 
@@ -25,15 +24,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn constructor_forward_parameter() {
-        assert_eq!(
-            SaveToAmqp::new(String::from("localhost"), String::from("queue")).url,
-            String::from("localhost")
-        );
-        assert_eq!(
-            SaveToAmqp::new(String::from("localhost"), String::from("queue")).queue,
-            String::from("queue")
-        );
+    #[should_panic]
+    fn connect_error() {
+        SaveToAmqp::new(String::from("amqp://localhost"), String::from("queue"));
     }
 
     // how mock ?

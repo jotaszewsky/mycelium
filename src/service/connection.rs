@@ -46,7 +46,9 @@ pub fn execute() -> Result<(),()> {
             let input: Input = bincode::deserialize(&read).unwrap();
             match input {
                 Input::Amqp { url, queue, queue_arguments, acknowledgement, count, prefetch_count } => {
-                    plugins::amqp::consume(&url, &queue, queue_arguments, acknowledgement, count, prefetch_count, event_source).unwrap()
+                    let mut amqp = plugins::amqp::Amqp::new(&url, queue, queue_arguments);
+                    amqp.consume(acknowledgement, count, prefetch_count, event_source).unwrap();
+                    amqp.close().unwrap();
                 },
                 Input::File {input, remove_used } => {
                     plugins::file::load(&input, remove_used, event_source).unwrap()
