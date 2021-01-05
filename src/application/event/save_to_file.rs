@@ -1,7 +1,5 @@
-use plugins::file::save;
-use plugins::file::FilenamePatterns;
-use application::Observer;
-use application::Value;
+use plugins::file::{save, FilenamePatterns};
+use application::{Observer, Value};
 
 pub struct SaveToFile {
     output: std::path::PathBuf,

@@ -6,9 +6,7 @@ use self::rand::distributions::Alphanumeric;
 use application::event_source::EventSource;
 use application::Value;
 
-use std::fs::read_to_string;
-use std::fs::write;
-use std::fs::remove_file;
+use std::fs::{read_to_string, write, remove_file};
 use std::path::PathBuf;
 
 pub fn save(message: &str, output: &PathBuf, filename_pattern: &Option<FilenamePatterns>) -> Result<(), ()> {

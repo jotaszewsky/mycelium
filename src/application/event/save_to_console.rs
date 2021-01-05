@@ -1,6 +1,5 @@
 use plugins::console::save;
-use application::Observer;
-use application::Value;
+use application::{Observer, Value};
 
 pub struct SaveToConsole {
     pretty_json: bool

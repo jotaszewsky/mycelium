@@ -1,6 +1,5 @@
 use plugins::amqp::publish;
-use application::Observer;
-use application::Value;
+use application::{Observer, Value};
 
 pub struct SaveToAmqp {
     url: String,

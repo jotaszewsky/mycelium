@@ -3,9 +3,7 @@ use application::Temporary;
 use plugins;
 use Output;
 use Input;
-use application::event::SaveToAmqp;
-use application::event::SaveToFile;
-use application::event::SaveToConsole;
+use application::event::{SaveToAmqp, SaveToFile, SaveToConsole};
 use application::event_source::EventSource;
 
 use std::sync::{Arc, Mutex};

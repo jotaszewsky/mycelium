@@ -4,8 +4,7 @@ use self::amiquip::{AmqpValue, Connection, ConsumerMessage, ConsumerOptions, Que
 extern crate serde;
 extern crate serde_json;
 
-use std::collections::HashMap;
-use std::collections::BTreeMap;
+use std::collections::{HashMap, BTreeMap};
 use application::event_source::EventSource;
 use application::Value;
 
@@ -66,6 +65,7 @@ pub fn consume(
 }
 
 pub fn publish(url: &str, queue_name: &str, message: &str, header: &Option<String>) -> Result<()> {
+    // change to not open connection every time
     let mut connection = Connection::insecure_open(url)?;
     let channel = connection.open_channel(None)?;
     let exchange = Exchange::direct(&channel);

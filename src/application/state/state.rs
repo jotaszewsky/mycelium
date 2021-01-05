@@ -1,8 +1,4 @@
-use std::fs::write;
-use std::fs::metadata;
-use std::fs::remove_file;
-use std::fs::create_dir_all;
-use std::fs::File;
+use std::fs::{write, metadata, remove_file, create_dir_all, File};
 use std::io::Read;
 use std::path::PathBuf;
 use application::Temporary;

@@ -1,6 +1,5 @@
 use std::sync::{Arc, Mutex};
-use application::Observer;
-use application::Value;
+use application::{Observer, Value};
 
 pub struct EventSource {
     observers: Vec<Arc<Mutex<dyn Observer>>>,
