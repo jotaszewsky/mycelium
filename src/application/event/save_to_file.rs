@@ -1,20 +1,19 @@
-use plugins::file::{save, FilenamePatterns};
+use plugins::file::{FilenamePatterns, File};
 use application::{Observer, Value};
 
 pub struct SaveToFile {
-    output: std::path::PathBuf,
-    filename_patter: Option<FilenamePatterns>
+    file: File
 }
 
 impl SaveToFile {
-    pub fn new(output: std::path::PathBuf, filename_patter: Option<FilenamePatterns>) -> SaveToFile {
-        SaveToFile { output, filename_patter }
+    pub fn new(output: std::path::PathBuf, filename_pattern: Option<FilenamePatterns>) -> SaveToFile {
+        SaveToFile { file: File::new(output, filename_pattern) }
     }
 }
 
 impl Observer for SaveToFile {
     fn on_notify(&mut self, value: &Value) -> () {
-        save(&value.data, &self.output, &self.filename_patter).unwrap();
+        self.file.publish(&value.data).unwrap();
     }
 }
 
@@ -34,9 +33,10 @@ mod tests {
     }
 
     #[test]
-    fn constructor_forward_parameter() {
-        let path = &generate_path(None);
-        assert_eq!(SaveToFile::new(path.to_path_buf(), None).output.to_str(), path.to_str() );
+    fn constructor_no_errors() {
+        let path = generate_path(None);
+        SaveToFile::new(path, None);
+        assert!(true);
     }
 
     #[test]

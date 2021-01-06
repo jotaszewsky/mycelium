@@ -9,13 +9,54 @@ use application::Value;
 use std::fs::{read_to_string, write, remove_file};
 use std::path::PathBuf;
 
-pub fn save(message: &str, output: &PathBuf, filename_pattern: &Option<FilenamePatterns>) -> Result<(), ()> {
-    match filename_pattern {
-        Some(FilenamePatterns::random) => write(output.join(generate_random_filename()), message.as_bytes()).unwrap(),
-        Some(FilenamePatterns::index) => write(output.join(generate_index_filename(output)), message.as_bytes()).unwrap(),
-        None => write(output.join(generate_random_filename()), message.as_bytes()).unwrap()
+pub struct File {
+    path: PathBuf,
+    filename_pattern: Option<FilenamePatterns>
+}
+
+impl File {
+
+    pub fn new(path: PathBuf, filename_pattern: Option<FilenamePatterns>) -> File {
+        File { path, filename_pattern }
     }
-    Ok(())
+
+    pub fn publish(&mut self, message: &str) -> Result<(), ()> {
+        match self.filename_pattern {
+            Some(FilenamePatterns::random) => write(self.path.join(generate_random_filename()), message.as_bytes()).unwrap(),
+            Some(FilenamePatterns::index) => write(self.path.join(generate_index_filename(&self.path)), message.as_bytes()).unwrap(),
+            None => write(self.path.join(generate_random_filename()), message.as_bytes()).unwrap()
+        }
+        Ok(())
+    }
+
+    pub fn consume(&mut self, remove_used: bool, event_source: EventSource) -> Result<(), ()> {
+        if !self.path.is_file() && !self.path.is_dir() {
+            panic!("Wrong input path");
+        }
+        if self.path.is_file() {
+            event_source.notify(Value {
+                data: read_to_string(&self.path).unwrap(),
+                header: None
+            });
+            if remove_used {
+                remove_file(&self.path).expect("Something went wrong deleting the file")
+            }
+        }
+        if self.path.is_dir() {
+            for entry in self.path.read_dir().expect("read_dir call failed") {
+                if let Ok(entry) = entry {
+                    event_source.notify(Value {
+                        data: read_to_string(entry.path()).unwrap(),
+                        header: None
+                    });
+                    if remove_used {
+                        remove_file(entry.path()).expect("Something went wrong deleting the file")
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
 }
 
 fn generate_random_filename() -> String {
@@ -36,35 +77,6 @@ fn generate_index_filename(output: &PathBuf) -> String {
 pub enum FilenamePatterns {
     random,
     index
-}
-
-pub fn load(input: &PathBuf, remove_used: bool, event_source: EventSource) -> Result<(), ()> {
-    if !input.is_file() && !input.is_dir() {
-        panic!("Wrong input path");
-    }
-    if input.is_file() {
-        event_source.notify(Value {
-            data: read_to_string(input).unwrap(),
-            header: None
-        });
-        if remove_used {
-            remove_file(input).expect("Something went wrong deleting the file")
-        }
-    }
-    if input.is_dir() {
-        for entry in input.read_dir().expect("read_dir call failed") {
-            if let Ok(entry) = entry {
-                event_source.notify(Value {
-                    data: read_to_string(entry.path()).unwrap(),
-                    header: None
-                });
-                if remove_used {
-                    remove_file(entry.path()).expect("Something went wrong deleting the file")
-                }
-            }
-        }
-    }
-    Ok(())
 }
 
 #[cfg(test)]
@@ -142,14 +154,17 @@ mod tests {
     #[should_panic]
     fn save_wrong_output_error() {
         let path: PathBuf = generate_path(None);
-        let _ = save("test", &path, &None);
+        let mut file: File = File::new(path, None);
+        let _ = file.publish("test");
     }
 
     #[test]
     fn save_file_default() {
-        let path: PathBuf = generate_path(None);
+        let path: &PathBuf = &generate_path(None);
         let _ = fs::create_dir_all(&path).unwrap();
-        let _ = save("test", &path, &None);
+        let mut file: File = File::new(path.to_path_buf(), None);
+        let _ = file.publish("test");
+
         for entry in path.read_dir().unwrap() {
             if let Ok(entry) = entry {
                 assert_eq!(read_to_string(entry.path()).unwrap(), "test")
@@ -160,9 +175,11 @@ mod tests {
 
     #[test]
     fn save_file_filename_index() {
-        let path: PathBuf = generate_path(None);
+        let path: &PathBuf = &generate_path(None);
         let _ = fs::create_dir_all(&path).unwrap();
-        let _ = save("test", &path, &Some(FilenamePatterns::index));
+        let mut file: File = File::new(path.to_path_buf(), Some(FilenamePatterns::index));
+        let _ = file.publish("test");
+
         for entry in path.read_dir().unwrap() {
             if let Ok(entry) = entry {
                 assert_eq!(read_to_string(entry.path()).unwrap(), "test")
@@ -174,8 +191,9 @@ mod tests {
     #[test]
     #[should_panic]
     fn load_from_wrong_path_error() {
-        let path: &PathBuf = &generate_path(None);
-        let _ = load(path, false, EventSource::new());
+        let path: PathBuf = generate_path(None);
+        let mut file: File = File::new(path, None);
+        let _ = file.consume(false, EventSource::new());
     }
 
     #[test]
@@ -189,7 +207,8 @@ mod tests {
 
         let mut event_source: EventSource = EventSource::new();
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
-        let _ = load(&path.join("test-one.json"), false, event_source);
+        let mut file: File = File::new(path.to_path_buf().join("test-one.json"), None);
+        let _ = file.consume(false, EventSource::new());
 
         assert!(path.join("test-one.json").is_file());
 
@@ -207,7 +226,8 @@ mod tests {
 
         let mut event_source: EventSource = EventSource::new();
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
-        let _ = load(&path.join("test-one.json"), true, event_source);
+        let mut file: File = File::new(path.to_path_buf().join("test-one.json"), None);
+        let _ = file.consume(true, EventSource::new());
 
         assert!(!path.join("test-one.json").is_file());
 
@@ -226,7 +246,8 @@ mod tests {
 
         let mut event_source: EventSource = EventSource::new();
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
-        let _ = load(&path, false, event_source);
+        let mut file: File = File::new(path.to_path_buf(), None);
+        let _ = file.consume(false, EventSource::new());
 
         assert!(path.join("test-one.json").is_file());
         assert!(path.join("test-two.json").is_file());
@@ -246,7 +267,8 @@ mod tests {
 
         let mut event_source: EventSource = EventSource::new();
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
-        let _ = load(&path, true, event_source);
+        let mut file: File = File::new(path.to_path_buf(), None);
+        let _ = file.consume(true, EventSource::new());
 
         assert!(!path.join("test-one.json").is_file());
         assert!(!path.join("test-two.json").is_file());

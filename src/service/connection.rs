@@ -51,7 +51,8 @@ pub fn execute() -> Result<(),()> {
                     amqp.close().unwrap();
                 },
                 Input::File {input, remove_used } => {
-                    plugins::file::load(&input, remove_used, event_source).unwrap()
+                    let mut file = plugins::file::File::new(input, None);
+                    file.consume(remove_used, event_source).unwrap();
                 },
                 Input::Console {} => {
                     plugins::console::load(event_source).unwrap()
