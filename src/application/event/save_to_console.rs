@@ -1,31 +1,25 @@
-use plugins::console::save;
+use plugins::console::Console;
 use application::{Observer, Value};
 
 pub struct SaveToConsole {
-    pretty_json: bool
+    console: Console
 }
 
 impl SaveToConsole {
     pub fn new(pretty_json: bool) -> SaveToConsole {
-        SaveToConsole { pretty_json }
+        SaveToConsole { console: Console::new(pretty_json) }
     }
 }
 
 impl Observer for SaveToConsole {
     fn on_notify(&mut self, value: &Value) -> () {
-        save(&value.data, &value.header, self.pretty_json).unwrap()
+        self.console.publish(&value.data, &value.header).unwrap()
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn constructor_forward_parameter() {
-        assert_eq!(SaveToConsole::new(false).pretty_json, false );
-        assert_eq!(SaveToConsole::new(true).pretty_json, true );
-    }
 
     // no idea how mock println
     #[test]

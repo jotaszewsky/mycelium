@@ -55,7 +55,8 @@ pub fn execute() -> Result<(),()> {
                     file.consume(remove_used, event_source).unwrap();
                 },
                 Input::Console {} => {
-                    plugins::console::load(event_source).unwrap()
+                    let mut console = plugins::console::Console::new(false);
+                    console.consume(event_source).unwrap();
                 }
             }
         },
