@@ -1,30 +1,30 @@
 # Mycelium
 
-[![Build Status](https://github.com/Jotaszewsky/mycelium/workflows/Rust/badge.svg?branch=0.1.x)](https://github.com/Jotaszewsky/mycelium)
+[![Build Status](https://github.com/jotaszewsky/mycelium/workflows/Rust/badge.svg?branch=0.1.x)](https://github.com/jotaszewsky/mycelium)
 
-The `mycelium.technokreacja.io` repo is used to create connection between different
+The `mycelium` repo is used to create connection between different
 data sources. 
 
 ==========
 
-by Karol Hrusza <khrusza@gmail.com><br>
-<https://github.com/Jotaszewsky>
+by Karol<br>
+<https://github.com/jotaszewsky>
 
 
 ## Usage
 
 #### Help:
 
-`-h, --help` Prints help information <br>
-`-V, --version` Prints version information <br>
+`-h, --help` Print help information <br>
+`-V, --version` Print version information <br>
 
-`connection` Opening the connection by using mycelium <br>
-`help` Prints this message or the help of the given subcommand(s) <br>
-`multi-write` Defines the state of multiple storage sources <br>
-`read` Defines the state of the reader source <br>
-`show` Show mycelium connections <br>
-`write` Defines the state of the storage source <br>
-`apply` Defines states for read and write by yaml file <br>
+`connection` Open connection<br>
+`help` Print help <br>
+`multi-write` Define multiple output states <br>
+`read` Define the input state <br>
+`show` Show connections <br>
+`write` Define the output state <br>
+`apply` Define input and output state by yaml file <br>
 
 #### Quick Start:
 
@@ -67,3 +67,5 @@ However, I thank their creators for the useful tool that has allowed me to creat
 
 ## Licensing
 MIT
+
+![](https://64.media.tumblr.com/cecc281d4a592430b9d482b4fff19d9b/tumblr_plxi8amzQn1qdhps7o2_r1_540.gifv)
