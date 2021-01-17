@@ -6,6 +6,7 @@ mod service;
 extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
+extern crate serde_yaml;
 extern crate colored_json;
 extern crate structopt;
 
@@ -31,6 +32,11 @@ enum Cli {
         output: Output,
         #[structopt(short, long)]
         clear: bool
+    },
+    #[structopt(about = "Defines the state by yaml")]
+    Apply {
+        #[structopt(short, long, parse(from_os_str), help = "Path to yaml file")]
+        input: std::path::PathBuf,
     },
     #[structopt(about = "Show mycelium connections")]
     Show {
@@ -114,6 +120,7 @@ fn main() -> Result<(),()> {
     match Cli::from_args() {
         Cli::Connection {} => service::connection::execute(),
         Cli::Show {} => service::show::execute(),
+        Cli::Apply { input } => service::apply::execute(input),
         Cli::Read { input } => service::read::execute(input),
         Cli::Write { output } => service::write::execute(output),
         Cli::MultiWrite { output, clear } => service::multi_write::execute(output, clear),

@@ -11,7 +11,7 @@ by Karol Hrusza <khrusza@gmail.com><br>
 <https://github.com/Jotaszewsky>
 
 
-## Installing
+## Usage
 
 #### Help:
 
@@ -24,6 +24,7 @@ by Karol Hrusza <khrusza@gmail.com><br>
 `read` Defines the state of the reader source <br>
 `show` Show mycelium connections <br>
 `write` Defines the state of the storage source <br>
+`apply` Defines states for read and write by yaml file <br>
 
 #### Quick Start:
 
@@ -49,6 +50,16 @@ The list of currently implemented sources for the Mycelium.
 `amqp`
 `file`
 `console`
+
+## Installation and compilation
+
+##### Compilation
+
+`docker-compose exec cargo cargo build --release`
+
+##### Test
+
+`docker-compose exec cargo cargo test`
 
 ## Origins
 Mycelium uses the cargo dependencies. I am not the author of the cargo dependency code.
