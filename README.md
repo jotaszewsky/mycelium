@@ -25,6 +25,7 @@ by Karol<br>
 `show` Show connections <br>
 `write` Define the output state <br>
 `apply` Define input and output state by yaml file <br>
+`clear` Clear state <br>
 
 #### Quick Start:
 

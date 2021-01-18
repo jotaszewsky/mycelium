@@ -4,3 +4,4 @@ pub mod multi_write;
 pub mod connection;
 pub mod show;
 pub mod apply;
+pub mod clear;

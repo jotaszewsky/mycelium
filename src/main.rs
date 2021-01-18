@@ -39,6 +39,9 @@ enum Cli {
         #[structopt(short, long, parse(from_os_str), help = "Path to yaml file")]
         input: std::path::PathBuf,
     },
+    #[structopt(about = "Clear state")]
+    Clear {
+    },
     #[structopt(about = "Show mycelium connections")]
     Show {
     },
@@ -125,5 +128,6 @@ fn main() -> Result<(),()> {
         Cli::Read { input } => service::read::execute(input),
         Cli::Write { output } => service::write::execute(output),
         Cli::MultiWrite { output, clear } => service::multi_write::execute(output, clear),
+        Cli::Clear { } => service::clear::execute(),
     }
 }
