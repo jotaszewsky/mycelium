@@ -9,6 +9,7 @@ extern crate serde_json;
 extern crate serde_yaml;
 extern crate colored_json;
 extern crate structopt;
+extern crate console;
 
 use serde::{Deserialize, Serialize};
 use structopt::StructOpt;

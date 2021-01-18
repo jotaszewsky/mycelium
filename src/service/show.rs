@@ -1,3 +1,4 @@
+use console::style;
 use application::state::State;
 use application::Temporary;
 use Output;
@@ -5,32 +6,24 @@ use Input;
 
 pub fn execute() -> Result<(),()> {
     let mut temp: State = State::new(None);
-    println!("\n");
-    println!("#################");
-    println!("#  Read source  #");
-    println!("#################");
+    println!("{}", style("Read source").cyan());
     match temp.read(String::from("read")) {
         Ok(read) => {
             let input: Input = bincode::deserialize(&read).unwrap();
-            println!("{:?}", input)
+            println!("{:#?}", input)
         }
-        Err(_err) => println!("Not set")
+        Err(_err) => println!("{}", style("-- Not set --").red())
     }
-    println!("\n");
-    println!("#################");
-    println!("\n");
-    println!("#################");
-    println!("# Write sources #");
-    println!("#################");
+
+    println!("{}", style("Write sources").cyan());
     match temp.read(String::from("write")) {
         Ok(write) => {
             let output_vec: Vec<Output> = bincode::deserialize(&write).unwrap();
             for output in output_vec {
-                println!("- {:?}", output);
+                println!("{} {:#?}", style("-").cyan(), output);
             }
         },
-        Err(_err) => println!("Not set")
+        Err(_err) => println!("{}", style("-- Not set --").red())
     }
-    println!("\n");
     Ok(())
 }
