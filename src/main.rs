@@ -76,6 +76,8 @@ pub enum Input {
     },
     #[structopt(about = "Read from console")]
     Console {
+        #[structopt(short, long, help = "Flag for give ability to set header")]
+        add_header: bool,
     }
 }
 
@@ -128,6 +130,6 @@ fn main() -> Result<(),()> {
         Cli::Read { input } => service::read::execute(input),
         Cli::Write { output } => service::write::execute(output),
         Cli::MultiWrite { output, clear } => service::multi_write::execute(output, clear),
-        Cli::Clear { } => service::clear::execute(),
+        Cli::Clear {} => service::clear::execute(),
     }
 }

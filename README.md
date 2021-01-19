@@ -46,6 +46,7 @@ The list of currently implemented sources for the Mycelium.
 ##### Input
 `amqp`
 `file`
+`console`
 
 ##### Output
 `amqp`

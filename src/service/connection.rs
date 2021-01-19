@@ -54,9 +54,9 @@ pub fn execute() -> Result<(),()> {
                     let mut file = plugins::file::File::new(input, None);
                     file.consume(remove_used, event_source).unwrap();
                 },
-                Input::Console {} => {
+                Input::Console { add_header } => {
                     let mut console = plugins::console::Console::new(false);
-                    console.consume(event_source).unwrap();
+                    console.consume(add_header, event_source).unwrap();
                 }
             }
         },

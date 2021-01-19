@@ -33,13 +33,20 @@ impl Console {
         Ok(())
     }
 
-    pub fn consume(&mut self, event_source: EventSource) -> Result<(), ()> {
-        let mut input = String::new();
+    pub fn consume(&mut self, add_header: bool, event_source: EventSource) -> Result<(), ()> {
+        let mut data: String = String::new();
+        let mut header: Option<String> = None;
         println!("Please type json message...");
-        io::stdin().read_line(&mut input).unwrap();
+        io::stdin().read_line(&mut data).unwrap();
+        if add_header {
+            println!("Please type json header...");
+            let mut line: String = String::new();
+            io::stdin().read_line(&mut line).unwrap();
+            header = Some(line);
+        }
         event_source.notify(Value {
-            data: input,
-            header: None
+            data,
+            header
         });
         Ok(())
     }
