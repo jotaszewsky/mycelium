@@ -1,10 +1,10 @@
 extern crate rand;
 
+use console::style;
 use application::event_source::EventSource;
 use application::Value;
 use serde_json::json;
 use colored_json::to_colored_json_auto;
-
 use std::io;
 
 pub struct Console {
@@ -19,13 +19,13 @@ impl Console {
 
     pub fn publish(&mut self, message: &String, header: &Option<String>) -> Result<(), ()> {
         if let Some(header) = header {
-            println!("\n## HEADERS:\n");
+            println!("{}", style("Header:").cyan());
             match self.pretty_json {
                 true => println!("{}", to_colored_json_auto(&json!(header)).unwrap()),
                 false => println!("{}", header)
             }
         }
-        println!("\n## BODY:\n");
+        println!("{}", style("Body:").cyan());
         match self.pretty_json {
             true => println!("{}", to_colored_json_auto(&json!(message)).unwrap()),
             false => println!("{}", message)
