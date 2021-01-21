@@ -13,7 +13,7 @@ impl SaveToFile {
 
 impl Observer for SaveToFile {
     fn on_notify(&mut self, value: &Value) -> () {
-        self.file.publish(&value.data).unwrap();
+        self.file.publish(&value.data, &value.header).unwrap();
     }
 }
 

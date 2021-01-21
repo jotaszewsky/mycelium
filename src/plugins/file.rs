@@ -20,11 +20,22 @@ impl File {
         File { path, filename_pattern }
     }
 
-    pub fn publish(&mut self, message: &str) -> Result<(), ()> {
+    pub fn publish(&mut self, message: &str, header: &Option<String>) -> Result<(), ()> {
         match self.filename_pattern {
-            Some(FilenamePatterns::random) => write(self.path.join(generate_random_filename()), message.as_bytes()).unwrap(),
-            Some(FilenamePatterns::index) => write(self.path.join(generate_index_filename(&self.path)), message.as_bytes()).unwrap(),
-            None => write(self.path.join(generate_random_filename()), message.as_bytes()).unwrap()
+            Some(FilenamePatterns::random) | None => {
+                let filename = generate_random_filename();
+                write(self.path.join(&filename), message.as_bytes()).unwrap();
+                if let Some(header) = header {
+                    write(self.path.join(format!("{}.header", &filename)), header.as_bytes()).unwrap()
+                }
+            },
+            Some(FilenamePatterns::index) => {
+                let filename = generate_index_filename(&self.path);
+                write(self.path.join(&filename), message.as_bytes()).unwrap();
+                if let Some(header) = header {
+                    write(self.path.join(format!("{}.header", &filename)), header.as_bytes()).unwrap()
+                }
+            }
         }
         Ok(())
     }
@@ -36,27 +47,45 @@ impl File {
         if self.path.is_file() {
             event_source.notify(Value {
                 data: read_to_string(&self.path).unwrap(),
-                header: None
+                header: header_read_to_string(&self.path)
             });
             if remove_used {
-                remove_file(&self.path).expect("Something went wrong deleting the file")
+                remove_file(&self.path).expect("Something went wrong deleting the file");
+                header_remove_file(&self.path).expect("Something went wrong deleting the file")
             }
         }
         if self.path.is_dir() {
-            for entry in self.path.read_dir().expect("read_dir call failed") {
-                if let Ok(entry) = entry {
-                    event_source.notify(Value {
-                        data: read_to_string(entry.path()).unwrap(),
-                        header: None
-                    });
-                    if remove_used {
-                        remove_file(entry.path()).expect("Something went wrong deleting the file")
-                    }
+            for entry in self.path.read_dir()
+                .unwrap()
+                .filter_map(Result::ok)
+                .filter(|file| file.path().extension().unwrap() == "json")
+                .into_iter() {
+                event_source.notify(Value {
+                    data: read_to_string(entry.path()).unwrap(),
+                    header: header_read_to_string(&entry.path())
+                });
+                if remove_used {
+                    remove_file(entry.path()).expect("Something went wrong deleting the file");
+                    header_remove_file(&entry.path()).expect("Something went wrong deleting the file")
                 }
             }
         }
         Ok(())
     }
+}
+
+fn header_read_to_string(path: &PathBuf) -> Option<String> {
+    if path.join(String::from(".header")).is_file() {
+        return Some(read_to_string(&path.join(String::from(".header"))).unwrap())
+    }
+    None
+}
+
+fn header_remove_file(path: &PathBuf) -> Result<(), ()> {
+    if path.join(String::from(".header")).is_file() {
+        remove_file(path.join(String::from(".header")));
+    }
+    Ok(())
 }
 
 fn generate_random_filename() -> String {
@@ -71,7 +100,6 @@ fn generate_index_filename(output: &PathBuf) -> String {
     let index: String = (output.read_dir().unwrap().count()+1).to_string();
     format!("{}.json", index)
 }
-
 #[derive(Serialize, Deserialize, Debug)]
 #[allow(non_camel_case_types)]
 pub enum FilenamePatterns {
@@ -155,7 +183,7 @@ mod tests {
     fn save_wrong_output_error() {
         let path: PathBuf = generate_path(None);
         let mut file: File = File::new(path, None);
-        let _ = file.publish("test");
+        let _ = file.publish("test", &None);
     }
 
     #[test]
@@ -163,7 +191,7 @@ mod tests {
         let path: &PathBuf = &generate_path(None);
         let _ = fs::create_dir_all(&path).unwrap();
         let mut file: File = File::new(path.to_path_buf(), None);
-        let _ = file.publish("test");
+        let _ = file.publish("test", &None);
 
         for entry in path.read_dir().unwrap() {
             if let Ok(entry) = entry {
@@ -178,7 +206,7 @@ mod tests {
         let path: &PathBuf = &generate_path(None);
         let _ = fs::create_dir_all(&path).unwrap();
         let mut file: File = File::new(path.to_path_buf(), Some(FilenamePatterns::index));
-        let _ = file.publish("test");
+        let _ = file.publish("test", &None);
 
         for entry in path.read_dir().unwrap() {
             if let Ok(entry) = entry {
@@ -247,7 +275,7 @@ mod tests {
         let mut event_source: EventSource = EventSource::new();
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
         let mut file: File = File::new(path.to_path_buf(), None);
-        let _ = file.consume(false, EventSource::new());
+        let _ = file.consume(false, event_source);
 
         assert!(path.join("test-one.json").is_file());
         assert!(path.join("test-two.json").is_file());
@@ -268,7 +296,7 @@ mod tests {
         let mut event_source: EventSource = EventSource::new();
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
         let mut file: File = File::new(path.to_path_buf(), None);
-        let _ = file.consume(true, EventSource::new());
+        let _ = file.consume(true, event_source);
 
         assert!(!path.join("test-one.json").is_file());
         assert!(!path.join("test-two.json").is_file());
