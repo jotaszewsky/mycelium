@@ -47,11 +47,13 @@ The list of currently implemented sources for the Mycelium.
 `amqp`
 `file`
 `console`
+`mongodb`
 
 ##### Output
 `amqp`
 `file`
 `console`
+`mongodb`
 
 ## Installation and compilation
 

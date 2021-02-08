@@ -3,7 +3,7 @@ use application::Temporary;
 use plugins;
 use Output;
 use Input;
-use application::event::{SaveToAmqp, SaveToFile, SaveToConsole};
+use application::event::{SaveToAmqp, SaveToFile, SaveToConsole, SaveToMongoDB};
 use application::event_source::EventSource;
 
 use std::sync::{Arc, Mutex};
@@ -32,6 +32,13 @@ pub fn execute() -> Result<(),()> {
                         event_source.register_observer(Arc::new(Mutex::new(SaveToConsole::new(
                             pretty_json
                         ))));
+                    },
+                    Output::MongoDB { dsn, database, collection } => {
+                        event_source.register_observer(Arc::new(Mutex::new(SaveToMongoDB::new(
+                            dsn,
+                            database,
+                            collection
+                        ))));
                     }
                 }
             }
@@ -57,6 +64,10 @@ pub fn execute() -> Result<(),()> {
                 Input::Console { add_header } => {
                     let mut console = plugins::console::Console::new(false);
                     console.consume(add_header, event_source).unwrap();
+                },
+                Input::MongoDB { dsn, database, collection, count } => {
+                    let mut mongodb = plugins::mongodb::MongoDB::new(dsn, database, collection);
+                    mongodb.consume(count, event_source).unwrap();
                 }
             }
         },

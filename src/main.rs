@@ -78,6 +78,17 @@ pub enum Input {
     Console {
         #[structopt(short, long, help = "Flag for give ability to set header")]
         add_header: bool,
+    },
+    #[structopt(about = "Read from mongodb")]
+    MongoDB {
+        #[structopt(short, long, help = "MongoDb dsn")]
+        dsn: String,
+        #[structopt(short, long, help = "Database name")]
+        database: String,
+        #[structopt(short, long, help = "Collection name")]
+        collection: String,
+        #[structopt(short, long, default_value = "0", help = "Message limit, when exceeded, the worker will switch off")]
+        count: i64
     }
 }
 
@@ -101,6 +112,15 @@ pub enum Output {
     Console {
         #[structopt(short, long, help = "Flag to colored json response")]
         pretty_json: bool
+    },
+    #[structopt(about = "Read from mongodb")]
+    MongoDB {
+        #[structopt(short, long, help = "MongoDb dsn")]
+        dsn: String,
+        #[structopt(short, long, help = "Database name")]
+        database: String,
+        #[structopt(short, long, help = "Collection name")]
+        collection: String,
     }
 }
 
