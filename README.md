@@ -1,5 +1,7 @@
 # Mycelium
 
+![kubectl logo](images/mycelium-logo-medium.png)
+
 [![Build Status](https://github.com/jotaszewsky/mycelium/workflows/Rust/badge.svg?branch=0.1.x)](https://github.com/jotaszewsky/mycelium)
 
 The `mycelium` repo is used to create connection between different
