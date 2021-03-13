@@ -52,19 +52,34 @@ mod tests {
 
     #[test]
     fn constructor_observers_vector_empty() {
-        assert_eq!(EventSource::new().observers.len(), 0 );
+        assert_eq!(
+            EventSource::new(
+                Pipe::new(
+                    Vec::new()
+                )
+            ).observers.len(),
+            0
+        );
     }
 
     #[test]
     fn register_one_observer() {
-        let mut event_source: EventSource = EventSource::new();
+        let mut event_source: EventSource = EventSource::new(
+            Pipe::new(
+                Vec::new()
+            )
+        );
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
         assert_eq!(event_source.observers.len(), 1 );
     }
 
     #[test]
     fn register_multiple_observers() {
-        let mut event_source: EventSource = EventSource::new();
+        let mut event_source: EventSource = EventSource::new(
+            Pipe::new(
+                Vec::new()
+            )
+        );
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
         assert_eq!(event_source.observers.len(), 2 );
@@ -72,21 +87,33 @@ mod tests {
 
     #[test]
     fn notify_no_observers() {
-        let event_source: EventSource = EventSource::new();
+        let event_source: EventSource = EventSource::new(
+            Pipe::new(
+                Vec::new()
+            )
+        );
         event_source.notify(Value { data: String::from("test"), header: None });
         assert!(true);
     }
 
     #[test]
     fn notify_one_observer() {
-        let mut event_source: EventSource = EventSource::new();
+        let mut event_source: EventSource = EventSource::new(
+            Pipe::new(
+                Vec::new()
+            )
+        );
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
         event_source.notify(Value { data: String::from("test"), header: None });
     }
 
     #[test]
     fn notify_multiple_observers() {
-        let mut event_source: EventSource = EventSource::new();
+        let mut event_source: EventSource = EventSource::new(
+            Pipe::new(
+                Vec::new()
+            )
+        );
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
         event_source.notify(Value { data: String::from("test"), header: None });

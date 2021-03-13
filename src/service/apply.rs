@@ -18,7 +18,7 @@ const MIDDLEWARE_TEMP_KEY: &str = "middleware";
 struct File {
     pub input: Input,
     pub output: Vec<Output>,
-    pub middleware: Vec<Middleware>
+    pub middleware: Option<Vec<Middleware>>
 }
 
 pub fn execute(path: PathBuf) -> Result<(),()> {
@@ -27,12 +27,15 @@ pub fn execute(path: PathBuf) -> Result<(),()> {
     }
     let mut temp = State::new(None);
     let file: File = serde_yaml::from_str(&read_to_string(path).unwrap()).expect(
-        "Wrong yamm format!"
+        "Wrong yaml format!"
     );
-
+    let middleware: Vec<Middleware> = match file.middleware {
+        Some(middleware) => middleware,
+        None => Vec::new()
+    };
     temp.store(String::from(READ_TEMP_KEY), bincode::serialize(&file.input).unwrap())?;
     temp.store(String::from(WRITE_TEMP_KEY), bincode::serialize(&file.output).unwrap())?;
-    temp.store(String::from(MIDDLEWARE_TEMP_KEY), bincode::serialize(&file.middleware).unwrap())?;
+    temp.store(String::from(MIDDLEWARE_TEMP_KEY), bincode::serialize(&middleware).unwrap())?;
     Ok(())
 }
 

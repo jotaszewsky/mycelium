@@ -12,24 +12,20 @@ use std::sync::{Arc, Mutex};
 
 pub fn execute() -> Result<(),()> {
     let mut temp: State = State::new(None);
-    let mut event_source: EventSource;
-    match temp.read(String::from("middleware")) {
-        Ok(middlewares) => {
-            let middlewares_vec: Vec<Middleware> = bincode::deserialize(&middlewares).unwrap();
-            event_source = EventSource::new(
-                Pipe::new(
-                    middlewares_vec
-                )
-            );
-        },
+
+    let middlewares_vec: Vec<Middleware> = match bincode::deserialize(
+        &temp.read(String::from("middleware")).unwrap()
+    ) {
+        Ok(result) => result,
         Err(_err) => {
-            event_source = EventSource::new(
-                Pipe::new(
-                    Vec::new()
-                )
-            );
+            Vec::new()
         }
-    }
+    };
+    let mut event_source: EventSource = EventSource::new(
+        Pipe::new(
+            middlewares_vec
+        )
+    );
 
     match temp.read(String::from("write")) {
         Ok(write) => {

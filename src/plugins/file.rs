@@ -114,6 +114,7 @@ mod tests {
     use std::fs;
     use self::rand::Rng;
     use application::Observer;
+    use application::Pipe;
     use std::sync::{Arc, Mutex};
 
     /*
@@ -221,7 +222,14 @@ mod tests {
     fn load_from_wrong_path_error() {
         let path: PathBuf = generate_path(None);
         let mut file: File = File::new(path, None);
-        let _ = file.consume(false, EventSource::new());
+        let _ = file.consume(
+            false,
+            EventSource::new(
+                Pipe::new(
+                    Vec::new()
+                )
+            )
+        );
     }
 
     #[test]
@@ -233,10 +241,18 @@ mod tests {
         fs::create_dir_all(path).unwrap();
         fs::write(path.join("test-one.json"), "test").unwrap();
 
-        let mut event_source: EventSource = EventSource::new();
+        let mut event_source: EventSource = EventSource::new(
+            Pipe::new(
+                Vec::new()
+            )
+        );
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
         let mut file: File = File::new(path.to_path_buf().join("test-one.json"), None);
-        let _ = file.consume(false, EventSource::new());
+        let _ = file.consume(false, EventSource::new(
+            Pipe::new(
+                Vec::new()
+            )
+        ));
 
         assert!(path.join("test-one.json").is_file());
 
@@ -252,10 +268,18 @@ mod tests {
         fs::create_dir_all(path).unwrap();
         fs::write(path.join("test-one.json"), "test").unwrap();
 
-        let mut event_source: EventSource = EventSource::new();
+        let mut event_source: EventSource = EventSource::new(
+            Pipe::new(
+                Vec::new()
+            )
+        );
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
         let mut file: File = File::new(path.to_path_buf().join("test-one.json"), None);
-        let _ = file.consume(true, EventSource::new());
+        let _ = file.consume(true, EventSource::new(
+            Pipe::new(
+                Vec::new()
+            )
+        ));
 
         assert!(!path.join("test-one.json").is_file());
 
@@ -272,7 +296,11 @@ mod tests {
         fs::write(path.join("test-one.json"), "test").unwrap();
         fs::write(path.join("test-two.json"), "test").unwrap();
 
-        let mut event_source: EventSource = EventSource::new();
+        let mut event_source: EventSource = EventSource::new(
+            Pipe::new(
+                Vec::new()
+            )
+        );
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
         let mut file: File = File::new(path.to_path_buf(), None);
         let _ = file.consume(false, event_source);
@@ -293,7 +321,11 @@ mod tests {
         fs::write(path.join("test-one.json"), "test").unwrap();
         fs::write(path.join("test-two.json"), "test").unwrap();
 
-        let mut event_source: EventSource = EventSource::new();
+        let mut event_source: EventSource = EventSource::new(
+            Pipe::new(
+                Vec::new()
+            )
+        );
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
         let mut file: File = File::new(path.to_path_buf(), None);
         let _ = file.consume(true, event_source);
