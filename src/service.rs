@@ -5,3 +5,5 @@ pub mod connection;
 pub mod show;
 pub mod apply;
 pub mod clear;
+pub mod middleware;
+pub mod multi_middleware;

@@ -36,6 +36,18 @@ enum Cli {
         #[structopt(short, long)]
         clear: bool
     },
+    #[structopt(about = "Defines the middleware")]
+    Middleware {
+        #[structopt(flatten)]
+        middleware: Middleware
+    },
+    #[structopt(about = "Defines the multiple middlewares")]
+    MultiMiddleware {
+        #[structopt(flatten)]
+        middleware: Middleware,
+        #[structopt(short, long)]
+        clear: bool
+    },
     #[structopt(about = "Defines the state by yaml")]
     Apply {
         #[structopt(short, long, parse(from_os_str), help = "Path to yaml file")]
@@ -161,6 +173,8 @@ fn main() -> Result<(),()> {
         Cli::Read { input } => service::read::execute(input),
         Cli::Write { output } => service::write::execute(output),
         Cli::MultiWrite { output, clear } => service::multi_write::execute(output, clear),
+        Cli::Middleware { middleware } => service::middleware::execute(middleware),
+        Cli::MultiMiddleware { middleware, clear } => service::multi_middleware::execute(middleware, clear),
         Cli::Clear {} => service::clear::execute(),
     }
 }
