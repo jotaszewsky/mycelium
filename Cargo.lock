@@ -258,6 +258,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 
 [[package]]
+name = "autotools"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3b9f0494812b4a30c521d6122ff71c4f84ed4b1edae73e79cd7f38c9ae027943"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "backtrace"
 version = "0.3.56"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1058,6 +1067,34 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dc6f3ad7b9d11a0c00842ff8de1b60ee58661048eb8049ed33c73594f359d7e6"
 
 [[package]]
+name = "jq-rs"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c9cfaeae42ef96b227ab787558cc7bbd5f1dfe96b4df7c63f92853017751b0e4"
+dependencies = [
+ "jq-sys",
+]
+
+[[package]]
+name = "jq-src"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ae23a0c161dda65b96213574a016d314bce32e7060b6587c1c7d3c612c66b4b5"
+dependencies = [
+ "autotools",
+]
+
+[[package]]
+name = "jq-sys"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "81b65b7e54bd2fffc8cb20cbcf19f40d3158dab5cf5b5adb1f65f9b35eba4c48"
+dependencies = [
+ "jq-src",
+ "pkg-config",
+]
+
+[[package]]
 name = "js-sys"
 version = "0.3.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1279,7 +1316,9 @@ dependencies = [
  "colored_json",
  "console",
  "dotenv",
+ "jq-rs",
  "mongodb",
+ "pipeline",
  "rand 0.7.3",
  "serde",
  "serde_derive",
@@ -1488,6 +1527,18 @@ name = "pin-utils"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
+
+[[package]]
+name = "pipeline"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "30cd0c1c802e3c2c66a5c588b27c71d36c436dd958b5cb78010abff8ef71bf74"
+
+[[package]]
+name = "pkg-config"
+version = "0.3.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3831453b3449ceb48b6d9c7ad7c96d5ea673e9b470a1dc578c2ce6521230884c"
 
 [[package]]
 name = "polling"

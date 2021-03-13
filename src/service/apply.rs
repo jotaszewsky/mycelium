@@ -7,15 +7,18 @@ use application::state::State;
 use application::Temporary;
 use Input;
 use Output;
+use Middleware;
 
 const READ_TEMP_KEY: &str = "read";
 const WRITE_TEMP_KEY: &str = "write";
+const MIDDLEWARE_TEMP_KEY: &str = "middleware";
 
 #[allow(non_camel_case_types)]
 #[derive(Deserialize, Debug)]
 struct File {
     pub input: Input,
-    pub output: Vec<Output>
+    pub output: Vec<Output>,
+    pub middleware: Vec<Middleware>
 }
 
 pub fn execute(path: PathBuf) -> Result<(),()> {
@@ -29,6 +32,7 @@ pub fn execute(path: PathBuf) -> Result<(),()> {
 
     temp.store(String::from(READ_TEMP_KEY), bincode::serialize(&file.input).unwrap())?;
     temp.store(String::from(WRITE_TEMP_KEY), bincode::serialize(&file.output).unwrap())?;
+    temp.store(String::from(MIDDLEWARE_TEMP_KEY), bincode::serialize(&file.middleware).unwrap())?;
     Ok(())
 }
 

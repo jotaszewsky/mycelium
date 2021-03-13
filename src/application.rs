@@ -7,3 +7,5 @@ pub use self::observer::Observer;
 mod observer;
 pub use self::temporary::Temporary;
 mod temporary;
+pub use self::pipe::Pipe;
+mod pipe;

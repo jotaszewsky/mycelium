@@ -10,6 +10,8 @@ extern crate serde_yaml;
 extern crate colored_json;
 extern crate structopt;
 extern crate console;
+extern crate pipeline;
+extern crate jq_rs;
 
 use serde::{Deserialize, Serialize};
 use structopt::StructOpt;
@@ -121,6 +123,15 @@ pub enum Output {
         database: String,
         #[structopt(short, long, help = "Collection name")]
         collection: String,
+    }
+}
+
+#[derive(StructOpt, Serialize, Deserialize, Debug)]
+pub enum Middleware {
+    #[structopt(about = "Json query")]
+    JQ {
+        #[structopt(short, long, help = "Query to json")]
+        query: String
     }
 }
 

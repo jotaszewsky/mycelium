@@ -1,20 +1,23 @@
 use std::sync::{Arc, Mutex};
-use application::{Observer, Value};
+use application::{Observer, Value, Pipe};
 
 pub struct EventSource {
     observers: Vec<Arc<Mutex<dyn Observer>>>,
+    pipe: Pipe
 }
 
 impl EventSource {
-    pub fn new() -> EventSource {
+    pub fn new(pipe: Pipe) -> EventSource {
         EventSource {
             observers: vec![],
+            pipe
         }
     }
 
-    pub fn notify(&self, value: Value) -> () {
+    pub fn notify(&self, mut value: Value) -> () {
         for observer in self.observers.clone() {
             let mut observer = observer.lock().unwrap();
+            value = self.pipe.dispatch(value);
             observer.on_notify(&value);
         }
     }

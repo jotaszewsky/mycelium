@@ -1,16 +1,35 @@
 use application::state::State;
 use application::Temporary;
+use application::Pipe;
 use plugins;
 use Output;
 use Input;
+use Middleware;
 use application::event::{SaveToAmqp, SaveToFile, SaveToConsole, SaveToMongoDB};
 use application::event_source::EventSource;
 
 use std::sync::{Arc, Mutex};
 
 pub fn execute() -> Result<(),()> {
-    let mut event_source: EventSource = EventSource::new();
     let mut temp: State = State::new(None);
+    let mut event_source: EventSource;
+    match temp.read(String::from("middleware")) {
+        Ok(middlewares) => {
+            let middlewares_vec: Vec<Middleware> = bincode::deserialize(&middlewares).unwrap();
+            event_source = EventSource::new(
+                Pipe::new(
+                    middlewares_vec
+                )
+            );
+        },
+        Err(_err) => {
+            event_source = EventSource::new(
+                Pipe::new(
+                    Vec::new()
+                )
+            );
+        }
+    }
 
     match temp.read(String::from("write")) {
         Ok(write) => {
