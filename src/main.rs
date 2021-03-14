@@ -10,7 +10,6 @@ extern crate serde_yaml;
 extern crate colored_json;
 extern crate structopt;
 extern crate console;
-extern crate pipeline;
 extern crate jq_rs;
 
 use serde::{Deserialize, Serialize};
