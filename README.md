@@ -26,6 +26,8 @@ by Karol<br>
 `read` Define the input state <br>
 `show` Show connections <br>
 `write` Define the output state <br>
+`middleware` Define the middleware <br>
+`multi-middleware` Define multiple middlewares <br>
 `apply` Define input and output state by yaml file <br>
 `clear` Clear state <br>
 
@@ -42,20 +44,49 @@ Create mycelium network connection: <br>
 `mycelium connection` to stop connection `Ctrl+c` <br>
 For more commands use `mycelium help` <br>
 
+#### How to work with yml configuration
+
+You can put all the parameters as a yaml file. Example file format:
+```
+input:
+    MongoDB:
+        dsn: mongodb://user:password@localhost:80
+        database: database
+        collection: collection
+        count: 1
+output:
+    - Amqp:
+        url: amqp://user:password@localhost:5672
+        queue: queue
+middleware:
+    - JQ:
+        query: del(.. | ._v?)
+```
+
 #### Sources:
 The list of currently implemented sources for the Mycelium.
 
 ##### Input
+Source from which data will be retrieved. You can have one input source.
+
 `amqp`
 `file`
 `console`
 `mongodb`
 
 ##### Output
+Sources to which data will be sent. You can have multiple output sources.
+
 `amqp`
 `file`
 `console`
 `mongodb`
+
+##### Middleware
+A layer between the input source and the output source. 
+It can be used to modify data, change its format, clean it, etc.
+
+`jq`
 
 ## Installation and compilation
 
