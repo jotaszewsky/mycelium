@@ -32,10 +32,11 @@ pub fn execute() -> Result<(),()> {
             let output_vec: Vec<Output> = bincode::deserialize(&write).unwrap();
             for output in output_vec {
                 match output {
-                    Output::Amqp { url, queue } => {
+                    Output::Amqp { url, exchange, routing_key } => {
                         event_source.register_observer(Arc::new(Mutex::new(SaveToAmqp::new(
                             url,
-                            queue
+                            exchange,
+                            routing_key
                         ))));
                     },
                     Output::File { output, filename_pattern } => {
@@ -68,8 +69,8 @@ pub fn execute() -> Result<(),()> {
             let input: Input = bincode::deserialize(&read).unwrap();
             match input {
                 Input::Amqp { url, queue, queue_arguments, acknowledgement, count, prefetch_count } => {
-                    let mut amqp = plugins::amqp::Amqp::new(&url, queue, queue_arguments);
-                    amqp.consume(acknowledgement, count, prefetch_count, event_source).unwrap();
+                    let mut amqp = plugins::amqp::Amqp::new(&url);
+                    amqp.consume(queue, queue_arguments, acknowledgement, count, prefetch_count, event_source).unwrap();
                     amqp.close().unwrap();
                 },
                 Input::File {input, remove_used } => {

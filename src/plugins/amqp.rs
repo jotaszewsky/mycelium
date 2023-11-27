@@ -1,5 +1,5 @@
 extern crate amiquip;
-use self::amiquip::{AmqpValue, Connection, Channel, ConsumerMessage, ConsumerOptions, QueueDeclareOptions, Result, FieldTable, Exchange, Publish, AmqpProperties};
+use self::amiquip::{AmqpValue, Connection, Channel, ConsumerMessage, ConsumerOptions, QueueDeclareOptions, Result, FieldTable, Publish, AmqpProperties};
 
 extern crate serde;
 extern crate serde_json;
@@ -10,40 +10,39 @@ use application::Value;
 
 pub struct Amqp {
     connection: Connection,
-    channel: Channel,
-    queue: String,
-    queue_arguments: Option<String>
+    channel: Channel
 }
 
 impl Amqp {
 
-    pub fn new(url: &String, queue: String, queue_arguments: Option<String>) -> Amqp {
+    pub fn new(url: &String) -> Amqp {
         let mut connection = Connection::insecure_open(url).unwrap();
         let channel = connection.open_channel(None).unwrap();
-        Amqp { connection, channel, queue, queue_arguments }
+        Amqp { connection, channel }
     }
 
-    pub fn publish(&mut self, message: &str, header: &Option<String>) -> Result<()> {
-        let exchange = Exchange::direct(&self.channel);
+    pub fn publish(&mut self, exchange: &String, routing_key: &String, message: &str, header: &Option<String>) -> Result<()> {
         match header {
-            Some(header) => exchange.publish(Publish::with_properties(message.as_bytes(), &self.queue, build_properties(header)))?,
-            None => exchange.publish(Publish::new(message.as_bytes(), &self.queue))?
+            Some(header) => self.channel.basic_publish(exchange, Publish::with_properties(message.as_bytes(), routing_key, build_properties(header)))?,
+            None => self.channel.basic_publish(exchange, Publish::new(message.as_bytes(), routing_key))?
         }
         Ok(())
     }
 
     pub fn consume(
         &mut self,
+        queue: String,
+        queue_arguments: Option<String>,
         acknowledgement: Option<Acknowledgements>,
         count: usize,
         prefetch_count: u16,
         event_source: EventSource
     ) -> Result<()> {
         let queue = self.channel.queue_declare(
-            &self.queue,
+            &queue,
             QueueDeclareOptions {
                 durable: true,
-                arguments: build_field_table(&self.queue_arguments),
+                arguments: build_field_table(&queue_arguments),
                 ..QueueDeclareOptions::default()
             }
         )?;

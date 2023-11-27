@@ -111,8 +111,10 @@ pub enum Output {
     Amqp {
         #[structopt(short, long, help = "Dsn to amqp")]
         url: String,
-        #[structopt(short, long, help = "Amqp queue name")]
-        queue: String
+        #[structopt(short, long, help = "Amqp exchange name")]
+        exchange: String,
+        #[structopt(short, long, default_value = "", help = "Routing key")]
+        routing_key: String,
     },
     #[structopt(about = "Publish to files")]
     File {

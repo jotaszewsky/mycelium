@@ -57,7 +57,8 @@ input:
 output:
     - Amqp:
         url: amqp://user:password@localhost:5672
-        queue: queue
+        exchange: queue
+        routing_key: ""
 middleware:
     - JQ:
         query: del(.. | ._v?)
