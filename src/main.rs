@@ -71,8 +71,6 @@ pub enum Input {
         url: String,
         #[structopt(short, long, help = "Amqp queue name")]
         queue: String,
-        #[structopt(short, long, help = "Amqp queue arguments in json format")]
-        queue_arguments: Option<String>,
         #[structopt(short, long, parse(try_from_str = parse_acknowledgements), help = "Optional acknowledgement")]
         acknowledgement: Option<plugins::amqp::Acknowledgements>,
         #[structopt(short, long, default_value = "1", help = "Limit number of unacknowledged messages")]

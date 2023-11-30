@@ -1,10 +1,10 @@
 extern crate amiquip;
-use self::amiquip::{AmqpValue, Connection, Channel, ConsumerMessage, ConsumerOptions, QueueDeclareOptions, Result, FieldTable, Publish, AmqpProperties};
+use self::amiquip::{AmqpValue, Connection, Channel, ConsumerMessage, ConsumerOptions, Result, Publish, AmqpProperties};
 
 extern crate serde;
 extern crate serde_json;
 
-use std::collections::{HashMap, BTreeMap};
+use std::collections::BTreeMap;
 use application::event_source::EventSource;
 use application::Value;
 
@@ -32,24 +32,16 @@ impl Amqp {
     pub fn consume(
         &mut self,
         queue: String,
-        queue_arguments: Option<String>,
         acknowledgement: Option<Acknowledgements>,
         count: usize,
         prefetch_count: u16,
         event_source: EventSource
     ) -> Result<()> {
-        let queue = self.channel.queue_declare(
-            &queue,
-            QueueDeclareOptions {
-                durable: true,
-                arguments: build_field_table(&queue_arguments),
-                ..QueueDeclareOptions::default()
-            }
-        )?;
-
         self.channel.qos(0, prefetch_count, false)?;
-
-        let consumer = queue.consume(ConsumerOptions::default())?;
+        let consumer = self.channel.basic_consume(
+            queue,
+            ConsumerOptions::default()
+        )?;
         println!("Waiting for messages. Press Ctrl-C to exit.");
 
         for (i, message) in consumer.receiver().iter().enumerate() {
@@ -96,104 +88,14 @@ pub enum Acknowledgements {
     nack_requeue
 }
 
-fn build_field_table(queue_arguments: &Option<String>) -> FieldTable {
-    match queue_arguments {
-        Some(json) => build_arguments(&json),
-        None => FieldTable::new()
-    }
-}
-
 fn build_properties(header: &String) -> AmqpProperties {
     let headers: BTreeMap<String, AmqpValue> = serde_json::from_str(header).unwrap();
     AmqpProperties::default().with_headers(headers)
 }
 
-#[allow(non_camel_case_types)]
-#[derive(Deserialize, Debug)]
-struct Field {
-    pub value: String,
-    pub typedef: FieldTypes
-}
-
-#[allow(non_camel_case_types)]
-#[derive(Deserialize, Debug)]
-enum FieldTypes {
-    string,
-    int
-}
-
-fn build_arguments(queue_arguments: &str) -> FieldTable {
-    let mut args = FieldTable::new();
-    let key_values: HashMap<String, Field> = serde_json::from_str(queue_arguments).unwrap();
-    for (key, value) in key_values {
-        match value.typedef {
-            FieldTypes::string => args.insert(key, AmqpValue::LongString(String::from(value.value))),
-            FieldTypes::int => args.insert(key, AmqpValue::ShortInt(value.value.parse::<i16>().unwrap()))
-        };
-    }
-    return args;
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    #[should_panic]
-    fn build_arguments_not_json_error() {
-        build_field_table(&Some(String::from("not_json?")));
-    }
-
-    #[test]
-    fn build_arguments_string() {
-        let fields: FieldTable = build_field_table(
-            &Some(
-                String::from("{\"test1\": {\"value\": \"test value 1\", \"typedef\": \"string\"}, \"test2\": {\"value\": \"test value 2\", \"typedef\": \"string\"}}")
-            )
-        );
-        let (first_key, first_value) = fields.iter().next().unwrap();
-        assert_eq!((first_key, first_value), (&String::from("test1"), &AmqpValue::LongString(String::from("test value 1"))));
-        let (second_key, second_value) = fields.iter().last().unwrap();
-        assert_eq!((second_key, second_value), (&String::from("test2"), &AmqpValue::LongString(String::from("test value 2"))));
-    }
-
-    #[test]
-    fn build_arguments_int() {
-        let fields: FieldTable = build_field_table(
-            &Some(
-                String::from("{\"test1\": {\"value\": \"1\", \"typedef\": \"int\"}, \"test2\": {\"value\": \"23423\", \"typedef\": \"int\"}}")
-            )
-        );
-        let (first_key, first_value) = fields.iter().next().unwrap();
-        assert_eq!((first_key, first_value), (&String::from("test1"), &AmqpValue::ShortInt(1)));
-        let (second_key, second_value) = fields.iter().last().unwrap();
-        assert_eq!((second_key, second_value), (&String::from("test2"), &AmqpValue::ShortInt(23423)));
-    }
-
-    #[test]
-    fn build_arguments_mixed_int_string() {
-        let fields: FieldTable = build_field_table(
-            &Some(
-                String::from("{\"test1\": {\"value\": \"test value 1\", \"typedef\": \"string\"}, \"test2\": {\"value\": \"23423\", \"typedef\": \"int\"}}")
-            )
-        );
-        let (first_key, first_value) = fields.iter().next().unwrap();
-        assert_eq!((first_key, first_value), (&String::from("test1"), &AmqpValue::LongString(String::from("test value 1"))));
-        let (second_key, second_value) = fields.iter().last().unwrap();
-        assert_eq!((second_key, second_value), (&String::from("test2"), &AmqpValue::ShortInt(23423)));
-    }
-
-    #[test]
-    #[should_panic]
-    fn build_arguments_unknow_type_error() {
-        build_field_table(&Some(String::from("{\"test1\": {\"value\": \"0.2\", \"typedef\": \"float\"}}")));
-    }
-
-    #[test]
-    fn build_empty_field_table_if_no_json() {
-        let fields: FieldTable = build_field_table(&None);
-        assert_eq!(fields.len(), 0);
-    }
 
     #[test]
     #[should_panic]
