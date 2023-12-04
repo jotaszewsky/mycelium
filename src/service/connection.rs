@@ -5,7 +5,7 @@ use plugins;
 use Output;
 use Input;
 use Middleware;
-use application::event::{SaveToAmqp, SaveToFile, SaveToConsole, SaveToMongoDB};
+use application::event::{SaveToAmqp, SaveToFile, SaveToConsole, SaveToMongoDB, UpdateProgressBar};
 use application::event_source::EventSource;
 
 use std::sync::{Arc, Mutex};
@@ -69,6 +69,9 @@ pub fn execute() -> Result<(),()> {
             let input: Input = bincode::deserialize(&read).unwrap();
             match input {
                 Input::Amqp { url, queue, acknowledgement, count, prefetch_count } => {
+                    event_source.register_observer(Arc::new(Mutex::new(UpdateProgressBar::new(
+                        count
+                    ))));
                     let mut amqp = plugins::amqp::Amqp::new(&url);
                     amqp.consume(queue, acknowledgement, count, prefetch_count, event_source).unwrap();
                     amqp.close().unwrap();
@@ -82,6 +85,9 @@ pub fn execute() -> Result<(),()> {
                     console.consume(add_header, event_source).unwrap();
                 },
                 Input::MongoDB { dsn, database, collection, count } => {
+                    event_source.register_observer(Arc::new(Mutex::new(UpdateProgressBar::new(
+                        count
+                    ))));
                     let mut mongodb = plugins::mongodb::MongoDB::new(dsn, database, collection);
                     mongodb.consume(count, event_source).unwrap();
                 }

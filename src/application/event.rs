@@ -6,3 +6,5 @@ pub use self::save_to_console::SaveToConsole;
 mod save_to_console;
 pub use self::save_to_mongodb::SaveToMongoDB;
 mod save_to_mongodb;
+pub use self::update_progressbar::UpdateProgressBar;
+mod update_progressbar;

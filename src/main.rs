@@ -99,7 +99,7 @@ pub enum Input {
         #[structopt(short, long, help = "Collection name")]
         collection: String,
         #[structopt(short, long, default_value = "0", help = "Message limit, when exceeded, the worker will switch off")]
-        count: i64
+        count: usize
     }
 }
 

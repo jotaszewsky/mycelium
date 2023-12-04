@@ -40,13 +40,13 @@ impl MongoDB {
 
     pub fn consume(
         &mut self,
-        count: i64,
+        count: usize,
         event_source: EventSource
     ) -> Result<(), ()> {
         let mut options: Option<FindOptions> = None;
         if count != 0 {
             options = Some(FindOptions::builder()
-                .limit(count)
+                .limit(count as i64)
                 .build());
         }
         let cursor = self.collection.find(None, options).unwrap();
