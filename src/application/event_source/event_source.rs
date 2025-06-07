@@ -43,7 +43,7 @@ mod tests {
     impl Observer for SaveToAssertMock {
         fn on_notify(&mut self, value: &Value) -> () {
             assert!(true);
-            assert_eq!(value.data, self.assert);
+            assert_eq!(value.data, self.assert.clone().into_bytes().to_vec());
         }
     }
     /*
@@ -92,7 +92,7 @@ mod tests {
                 Vec::new()
             )
         );
-        event_source.notify(Value { data: String::from("test"), header: None });
+        event_source.notify(Value { data: String::from("test").into(), header: None });
         assert!(true);
     }
 
@@ -104,7 +104,7 @@ mod tests {
             )
         );
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
-        event_source.notify(Value { data: String::from("test"), header: None });
+        event_source.notify(Value { data: String::from("test").into(), header: None });
     }
 
     #[test]
@@ -116,6 +116,6 @@ mod tests {
         );
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
         event_source.register_observer(Arc::new(Mutex::new(SaveToAssertMock { assert: String::from("test") })));
-        event_source.notify(Value { data: String::from("test"), header: None });
+        event_source.notify(Value { data: String::from("test").into(), header: None });
     }
 }

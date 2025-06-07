@@ -17,7 +17,7 @@ impl Console {
         Console { pretty_json }
     }
 
-    pub fn publish(&mut self, message: &String, header: &Option<String>) -> Result<(), ()> {
+    pub fn publish(&mut self, message: &[u8], header: &Option<String>) -> Result<(), ()> {
         if let Some(header) = header {
             println!("{}", style("Header:").cyan());
             match self.pretty_json {
@@ -26,9 +26,10 @@ impl Console {
             }
         }
         println!("{}", style("Body:").cyan());
+        let output: String = String::from_utf8_lossy(message).to_string();
         match self.pretty_json {
-            true => println!("{}", to_colored_json_auto(&json!(message)).unwrap()),
-            false => println!("{}", message)
+            true => println!("{}", to_colored_json_auto(&json!(output)).unwrap()),
+            false => println!("{}", output)
         }
         Ok(())
     }
@@ -45,7 +46,7 @@ impl Console {
             header = Some(line);
         }
         event_source.notify(Value {
-            data,
+            data: data.as_bytes().to_vec(),
             header
         });
         Ok(())

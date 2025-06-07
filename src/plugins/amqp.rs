@@ -21,10 +21,10 @@ impl Amqp {
         Amqp { connection, channel }
     }
 
-    pub fn publish(&mut self, exchange: &String, routing_key: &String, message: &str, header: &Option<String>) -> Result<()> {
+    pub fn publish(&mut self, exchange: &String, routing_key: &String, message: &[u8], header: &Option<String>) -> Result<()> {
         match header {
-            Some(header) => self.channel.basic_publish(exchange, Publish::with_properties(message.as_bytes(), routing_key, build_properties(header)))?,
-            None => self.channel.basic_publish(exchange, Publish::new(message.as_bytes(), routing_key))?
+            Some(header) => self.channel.basic_publish(exchange, Publish::with_properties(message, routing_key, build_properties(header)))?,
+            None => self.channel.basic_publish(exchange, Publish::new(message, routing_key))?
         }
         Ok(())
     }
@@ -47,10 +47,10 @@ impl Amqp {
         for (i, message) in consumer.receiver().iter().enumerate() {
             match message {
                 ConsumerMessage::Delivery(delivery) => {
-                    let body = String::from_utf8_lossy(&delivery.body);
+                    let body = &delivery.body;
                     let headers: String = serde_json::to_string(&delivery.properties.headers()).unwrap();
                     event_source.notify(Value {
-                        data: body.to_string(),
+                        data: body.to_vec(),
                         header: Some(headers)
                     });
                     match acknowledgement {

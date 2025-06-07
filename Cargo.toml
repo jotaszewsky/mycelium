@@ -4,6 +4,7 @@ description = "Mycelium - application to connect between sources!"
 name = "mycelium"
 readme = "README.md"
 version = "0.2.0"
+edition = "2015"
 
 [dependencies]
 dotenv = "0.15.0"
