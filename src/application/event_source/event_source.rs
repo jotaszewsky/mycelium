@@ -17,7 +17,9 @@ impl EventSource {
     pub fn notify(&self, mut value: Value) -> () {
         for observer in self.observers.clone() {
             let mut observer = observer.lock().unwrap();
-            value = self.pipe.dispatch(value);
+            if observer.allows_middleware() {
+                value = self.pipe.dispatch(value);
+            }
             observer.on_notify(&value);
         }
     }
@@ -44,6 +46,10 @@ mod tests {
         fn on_notify(&mut self, value: &Value) -> () {
             assert!(true);
             assert_eq!(value.data, self.assert.clone().into_bytes().to_vec());
+        }
+
+        fn allows_middleware(&mut self) -> bool {
+            true
         }
     }
     /*

@@ -11,6 +11,7 @@ extern crate colored_json;
 extern crate structopt;
 extern crate console;
 extern crate jq_rs;
+extern crate flate2;
 
 use serde::{Deserialize, Serialize};
 use structopt::StructOpt;
@@ -143,6 +144,11 @@ pub enum Middleware {
     JQ {
         #[structopt(short, long, help = "Query to json")]
         query: String
+    },
+    #[structopt(about = "Zlib compression")]
+    Zlib {
+        #[structopt(short, long, help = "Flag for decompression, false means compression")]
+        decompression: bool
     }
 }
 

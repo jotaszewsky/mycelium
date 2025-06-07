@@ -131,6 +131,10 @@ mod tests {
             assert!(true);
             assert_eq!(value.data, self.assert.as_bytes().to_vec());
         }
+
+        fn allows_middleware(&mut self) -> bool {
+            true
+        }
     }
     /*
     * end of test double

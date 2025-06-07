@@ -17,6 +17,10 @@ impl Observer for SaveToAmqp {
     fn on_notify(&mut self, value: &Value) -> () {
         self.amqp.publish(&self.exchange, &self.routing_key, &value.data, &value.header).unwrap();
     }
+
+    fn allows_middleware(&mut self) -> bool {
+        true
+    }
 }
 
 #[cfg(test)]

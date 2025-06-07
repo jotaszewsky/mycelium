@@ -15,4 +15,8 @@ impl Observer for UpdateProgressBar {
     fn on_notify(&mut self, _value: &Value) -> () {
         self.progressbar.update().unwrap();
     }
+
+    fn allows_middleware(&mut self) -> bool {
+        false
+    }
 }

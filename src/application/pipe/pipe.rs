@@ -1,5 +1,8 @@
 use application::Value;
 use Middleware;
+use flate2::Compression;
+use flate2::write::{ZlibEncoder, ZlibDecoder};
+use std::io::prelude::*;
 
 #[derive(Debug)]
 pub struct Pipe {
@@ -19,6 +22,18 @@ impl Pipe {
                         let output: String = String::from_utf8_lossy(&value.data).to_string();
                         value.data = jq_rs::run(&query, &output).unwrap().as_bytes().to_vec();
                     },
+                    Middleware::Zlib { decompression } => {
+                        let buffer = Vec::new();
+                        if *decompression {
+                            let mut decoder = ZlibDecoder::new(buffer);
+                            decoder.write_all(&value.data).unwrap();
+                            value.data = decoder.finish().unwrap();
+                            continue;
+                        }
+                        let mut encoder = ZlibEncoder::new(buffer, Compression::default());
+                        encoder.write_all(&value.data).unwrap();
+                        value.data = encoder.finish().unwrap();
+                    }
                 }
             }
         }
