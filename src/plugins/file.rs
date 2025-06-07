@@ -6,7 +6,7 @@ use self::rand::distributions::Alphanumeric;
 use application::event_source::EventSource;
 use application::Value;
 
-use std::fs::{read_to_string, write, remove_file};
+use std::fs::{read, read_to_string, write, remove_file};
 use std::path::PathBuf;
 
 pub struct File {
@@ -20,18 +20,18 @@ impl File {
         File { path, filename_pattern }
     }
 
-    pub fn publish(&mut self, message: &str, header: &Option<String>) -> Result<(), ()> {
+    pub fn publish(&mut self, message: &[u8], header: &Option<String>) -> Result<(), ()> {
         match self.filename_pattern {
             Some(FilenamePatterns::random) | None => {
                 let filename = generate_random_filename();
-                write(self.path.join(&filename), message.as_bytes()).unwrap();
+                write(self.path.join(&filename), message).unwrap();
                 if let Some(header) = header {
                     write(self.path.join(format!("{}.header", &filename)), header.as_bytes()).unwrap()
                 }
             },
             Some(FilenamePatterns::index) => {
                 let filename = generate_index_filename(&self.path);
-                write(self.path.join(&filename), message.as_bytes()).unwrap();
+                write(self.path.join(&filename), message).unwrap();
                 if let Some(header) = header {
                     write(self.path.join(format!("{}.header", &filename)), header.as_bytes()).unwrap()
                 }
@@ -46,7 +46,7 @@ impl File {
         }
         if self.path.is_file() {
             event_source.notify(Value {
-                data: read_to_string(&self.path).unwrap(),
+                data: read(&self.path).unwrap(),
                 header: header_read_to_string(&self.path)
             });
             if remove_used {
@@ -61,7 +61,7 @@ impl File {
                 .filter(|file| file.path().extension().unwrap() == "json")
                 .into_iter() {
                 event_source.notify(Value {
-                    data: read_to_string(entry.path()).unwrap(),
+                    data: read(entry.path()).unwrap(),
                     header: header_read_to_string(&entry.path())
                 });
                 if remove_used {
@@ -129,7 +129,7 @@ mod tests {
     impl Observer for SaveToAssertMock {
         fn on_notify(&mut self, value: &Value) -> () {
             assert!(true);
-            assert_eq!(value.data, self.assert);
+            assert_eq!(value.data, self.assert.as_bytes().to_vec());
         }
     }
     /*
@@ -184,7 +184,7 @@ mod tests {
     fn save_wrong_output_error() {
         let path: PathBuf = generate_path(None);
         let mut file: File = File::new(path, None);
-        let _ = file.publish("test", &None);
+        let _ = file.publish("test".as_bytes(), &None);
     }
 
     #[test]
@@ -192,7 +192,7 @@ mod tests {
         let path: &PathBuf = &generate_path(None);
         let _ = fs::create_dir_all(&path).unwrap();
         let mut file: File = File::new(path.to_path_buf(), None);
-        let _ = file.publish("test", &None);
+        let _ = file.publish("test".as_bytes(), &None);
 
         for entry in path.read_dir().unwrap() {
             if let Ok(entry) = entry {
@@ -207,7 +207,7 @@ mod tests {
         let path: &PathBuf = &generate_path(None);
         let _ = fs::create_dir_all(&path).unwrap();
         let mut file: File = File::new(path.to_path_buf(), Some(FilenamePatterns::index));
-        let _ = file.publish("test", &None);
+        let _ = file.publish("test".as_bytes(), &None);
 
         for entry in path.read_dir().unwrap() {
             if let Ok(entry) = entry {

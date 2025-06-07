@@ -1,4 +1,4 @@
 pub struct Value {
-    pub data: String,
+    pub data: Vec<u8>,
     pub header: Option<String>
 }

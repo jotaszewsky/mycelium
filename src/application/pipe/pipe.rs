@@ -16,8 +16,9 @@ impl Pipe {
             for middleware in &self.middlewares {
                 match middleware {
                     Middleware::JQ { query } => {
-                        value.data = jq_rs::run(&query, &value.data).unwrap();
-                    }
+                        let output: String = String::from_utf8_lossy(&value.data).to_string();
+                        value.data = jq_rs::run(&query, &output).unwrap().as_bytes().to_vec();
+                    },
                 }
             }
         }

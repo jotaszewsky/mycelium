@@ -3,7 +3,7 @@ use self::mongodb::sync::{
     Client, Database, Collection
 };
 use self::mongodb::{
-    bson::{Bson, Document},
+    bson::Document,
     options::FindOptions,
 };
 
@@ -31,9 +31,8 @@ impl MongoDB {
     /*
     * Header is ignored for mongodb
     */
-    pub fn publish(&mut self, message: &str, _header: &Option<String>) -> Result<(), ()> {
-        let bson: &Bson = &Bson::String(message.to_string());
-        let document: &Document = Bson::as_document(bson).unwrap();
+    pub fn publish(&mut self, message: &[u8], _header: &Option<String>) -> Result<(), ()> {
+        let document: Document = serde_json::from_slice(message).unwrap();
         self.collection.insert_one(document.clone(), None);
         Ok(())
     }
@@ -54,7 +53,7 @@ impl MongoDB {
             match result {
                 Ok(document) => {
                     event_source.notify(Value {
-                        data: serde_json::to_string(&document).unwrap(),
+                        data: serde_json::to_string(&document).unwrap().as_bytes().to_vec(),
                         header: None
                     });
                 }
