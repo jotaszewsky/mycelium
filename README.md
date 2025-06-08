@@ -88,6 +88,7 @@ A layer between the input source and the output source.
 It can be used to modify data, change its format, clean it, etc.
 
 `jq`
+`zlib`
 
 ## Installation and compilation
 
