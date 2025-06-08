@@ -2,7 +2,7 @@
 #            BUILD              #
 #################################
 
-FROM rust:1.75.0-buster as builder
+FROM rust:1.87.0-bullseye as builder
 
 WORKDIR /home/rust
 COPY . .
