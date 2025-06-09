@@ -13,7 +13,7 @@ impl SaveToConsole {
 
 impl Observer for SaveToConsole {
     fn on_notify(&mut self, value: &Value) -> () {
-        self.console.publish(&value.data, &value.header).unwrap()
+        self.console.publish(value).unwrap()
     }
 
     fn allows_middleware(&mut self) -> bool {

@@ -13,7 +13,7 @@ impl SaveToFile {
 
 impl Observer for SaveToFile {
     fn on_notify(&mut self, value: &Value) -> () {
-        self.file.publish(&value.data, &value.header).unwrap();
+        self.file.publish(value).unwrap();
     }
 
     fn allows_middleware(&mut self) -> bool {

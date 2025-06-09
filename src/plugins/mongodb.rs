@@ -2,10 +2,7 @@ extern crate mongodb;
 use self::mongodb::sync::{
     Client, Database, Collection
 };
-use self::mongodb::{
-    bson::Document,
-    options::FindOptions,
-};
+use self::mongodb::options::FindOptions;
 
 extern crate serde;
 extern crate serde_json;
@@ -28,12 +25,11 @@ impl MongoDB {
         MongoDB { collection }
     }
 
-    /*
-    * Header is ignored for mongodb
-    */
-    pub fn publish(&mut self, message: &[u8], _header: &Option<String>) -> Result<(), ()> {
-        let document: Document = serde_json::from_slice(message).unwrap();
-        self.collection.insert_one(document.clone(), None);
+    pub fn publish(&mut self, value: &Value) -> Result<(), ()> {
+        let _ = self.collection.insert_one(
+            serde_json::from_slice(&value.data).unwrap(),
+            None
+        );
         Ok(())
     }
 

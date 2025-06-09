@@ -14,7 +14,7 @@ impl SaveToMongoDB {
 
 impl Observer for SaveToMongoDB {
     fn on_notify(&mut self, value: &Value) -> () {
-        self.mongodb.publish(&value.data, &value.header).unwrap();
+        self.mongodb.publish(value).unwrap();
     }
 
     fn allows_middleware(&mut self) -> bool {

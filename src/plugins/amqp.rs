@@ -21,10 +21,10 @@ impl Amqp {
         Amqp { connection, channel }
     }
 
-    pub fn publish(&mut self, exchange: &String, routing_key: &String, message: &[u8], header: &Option<String>) -> Result<()> {
-        match header {
-            Some(header) => self.channel.basic_publish(exchange, Publish::with_properties(message, routing_key, build_properties(header)))?,
-            None => self.channel.basic_publish(exchange, Publish::new(message, routing_key))?
+    pub fn publish(&mut self, exchange: &String, routing_key: &String, value: &Value) -> Result<()> {
+        match &value.header {
+            Some(header) => self.channel.basic_publish(exchange, Publish::with_properties(&value.data, routing_key, build_properties(&header)))?,
+            None => self.channel.basic_publish(exchange, Publish::new(&value.data, routing_key))?
         }
         Ok(())
     }

@@ -20,19 +20,19 @@ impl File {
         File { path, filename_pattern }
     }
 
-    pub fn publish(&mut self, message: &[u8], header: &Option<String>) -> Result<(), ()> {
+    pub fn publish(&mut self, value: &Value) -> Result<(), ()> {
         match self.filename_pattern {
             Some(FilenamePatterns::random) | None => {
                 let filename = generate_random_filename();
-                write(self.path.join(&filename), message).unwrap();
-                if let Some(header) = header {
+                write(self.path.join(&filename), &value.data).unwrap();
+                if let Some(header) = &value.header {
                     write(self.path.join(format!("{}.header", &filename)), header.as_bytes()).unwrap()
                 }
             },
             Some(FilenamePatterns::index) => {
                 let filename = generate_index_filename(&self.path);
-                write(self.path.join(&filename), message).unwrap();
-                if let Some(header) = header {
+                write(self.path.join(&filename), &value.data).unwrap();
+                if let Some(header) = &value.header {
                     write(self.path.join(format!("{}.header", &filename)), header.as_bytes()).unwrap()
                 }
             }
@@ -50,7 +50,7 @@ impl File {
                 header: header_read_to_string(&self.path)
             });
             if remove_used {
-                remove_file(&self.path).expect("Something went wrong deleting the file");
+                let _ = remove_file(&self.path).expect("Something went wrong deleting the file");
                 header_remove_file(&self.path).expect("Something went wrong deleting the file")
             }
         }
@@ -83,7 +83,7 @@ fn header_read_to_string(path: &PathBuf) -> Option<String> {
 
 fn header_remove_file(path: &PathBuf) -> Result<(), ()> {
     if path.join(String::from(".header")).is_file() {
-        remove_file(path.join(String::from(".header")));
+        let _ = remove_file(path.join(String::from(".header")));
     }
     Ok(())
 }
@@ -188,7 +188,7 @@ mod tests {
     fn save_wrong_output_error() {
         let path: PathBuf = generate_path(None);
         let mut file: File = File::new(path, None);
-        let _ = file.publish("test".as_bytes(), &None);
+        let _ = file.publish(&Value {data: "test".as_bytes().to_vec(), header: None});
     }
 
     #[test]
@@ -196,7 +196,7 @@ mod tests {
         let path: &PathBuf = &generate_path(None);
         let _ = fs::create_dir_all(&path).unwrap();
         let mut file: File = File::new(path.to_path_buf(), None);
-        let _ = file.publish("test".as_bytes(), &None);
+        let _ = file.publish(&Value {data: "test".as_bytes().to_vec(), header: None});
 
         for entry in path.read_dir().unwrap() {
             if let Ok(entry) = entry {
@@ -211,7 +211,7 @@ mod tests {
         let path: &PathBuf = &generate_path(None);
         let _ = fs::create_dir_all(&path).unwrap();
         let mut file: File = File::new(path.to_path_buf(), Some(FilenamePatterns::index));
-        let _ = file.publish("test".as_bytes(), &None);
+        let _ = file.publish(&Value {data: "test".as_bytes().to_vec(), header: None});
 
         for entry in path.read_dir().unwrap() {
             if let Ok(entry) = entry {

@@ -47,7 +47,7 @@ mod tests {
     #[should_panic]
     fn test_not_existing_file() {
         let path = PathBuf::from("/tmp/test_not_existing_file.yml");
-        execute(path);
+        let _ = execute(path);
     }
 
     #[test]
@@ -55,7 +55,7 @@ mod tests {
     fn test_not_yaml_extension() {
         let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         path.push("tests/assets/apply/default.json");
-        execute(path);
+        let _ = execute(path);
     }
 
     #[test]
@@ -63,7 +63,7 @@ mod tests {
     fn test_not_yaml_format() {
         let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         path.push("tests/assets/apply/wrong.yaml");
-        execute(path);
+        let _ = execute(path);
     }
 
     /*
