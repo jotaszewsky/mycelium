@@ -2,20 +2,18 @@ use plugins::amqp::Amqp;
 use application::{Observer, Value};
 
 pub struct SaveToAmqp {
-    amqp: Amqp,
-    exchange: String,
-    routing_key: String
+    amqp: Amqp
 }
 
 impl SaveToAmqp {
     pub fn new(url: String, exchange: String, routing_key: String) -> SaveToAmqp {
-        SaveToAmqp { amqp: Amqp::new(&url), exchange, routing_key }
+        SaveToAmqp { amqp: Amqp::new_write(&url, exchange, routing_key) }
     }
 }
 
 impl Observer for SaveToAmqp {
     fn on_notify(&mut self, value: &Value) -> () {
-        self.amqp.publish(&self.exchange, &self.routing_key, value).unwrap();
+        self.amqp.publish(value).unwrap();
     }
 
     fn allows_middleware(&mut self) -> bool {

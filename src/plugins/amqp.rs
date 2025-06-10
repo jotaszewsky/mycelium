@@ -10,7 +10,9 @@ use application::Value;
 
 pub struct Amqp {
     connection: Connection,
-    channel: Channel
+    channel: Channel,
+    exchange: Option<String>,
+    routing_key: Option<String>
 }
 
 impl Amqp {
@@ -18,10 +20,19 @@ impl Amqp {
     pub fn new(url: &String) -> Amqp {
         let mut connection = Connection::insecure_open(url).unwrap();
         let channel = connection.open_channel(None).unwrap();
-        Amqp { connection, channel }
+        Amqp { connection, channel, exchange: None, routing_key: None }
     }
 
-    pub fn publish(&mut self, exchange: &String, routing_key: &String, value: &Value) -> Result<()> {
+    pub fn new_write(url: &String, exchange: String, routing_key: String) -> Amqp {
+        let mut amqp = Amqp::new(url);
+        amqp.exchange = Some(exchange);
+        amqp.routing_key = Some(routing_key);
+        amqp
+    }
+
+    pub fn publish(&mut self, value: &Value) -> Result<()> {
+        let exchange: String = self.exchange.as_ref().unwrap().to_string();
+        let routing_key: String = self.routing_key.as_ref().unwrap().to_string();
         match &value.header {
             Some(header) => self.channel.basic_publish(exchange, Publish::with_properties(&value.data, routing_key, build_properties(&header)))?,
             None => self.channel.basic_publish(exchange, Publish::new(&value.data, routing_key))?
